@@ -1,6 +1,6 @@
 # VibeForge — AI Vibe Coding Builder
 
-A mobile-first browser workspace for creating and editing small web projects with an OpenAI-compatible chat-completions model.
+A mobile-first browser workspace with a built-in offline rule-based project generator and an optional OpenAI-compatible chat-completions connection.
 
 ## Included
 
@@ -8,7 +8,7 @@ A mobile-first browser workspace for creating and editing small web projects wit
 - Live HTML preview in a sandboxed iframe
 - Preview error capture for JavaScript errors, unhandled promise rejections, and `console.error`
 - AI repair workflow that sends the preview error and selected source file back to the model
-- AI chat that can generate or update multiple project files
+- Built-in offline Local Engine that generates working starter projects without an API key\n- Local templates for todo apps, calculators, quizzes, reaction games, stores, dashboards, portfolios, and landing pages\n- Mobile-first generated layouts, theme toggle, and browser-local demo data\n- Optional AI chat that can generate or update multiple project files through a compatible provider
 - Local browser autosave
 - ZIP export (JSZip CDN; text-file fallback if unavailable)
 - Responsive mobile layout
@@ -22,9 +22,9 @@ Use the **React/Vite** button to replace the current project with a starter cont
 
 Open `index.html` in a modern browser, or publish this repository with GitHub Pages / Netlify.
 
-## Connect an AI model
+## Use the built-in Local Engine\n\nNo API setup is required. When no external model is configured, the app uses `local-engine.js` to classify common project requests and generate a working multi-file starter. Try prompts such as `할 일 관리 앱 만들어줘`, `계산기 만들어줘`, or `반응속도 게임 만들어줘`. This is a deterministic rule-based generator, not a trained large language model: it does not understand arbitrary requests with ChatGPT-level flexibility. Its generated demo data is stored in the current browser only.\n\n## Connect an optional external AI model
 
-Open **AI 연결 설정** and enter:
+Open **외부 AI 설정** and enter:
 
 - **API base URL**: provider's OpenAI-compatible API base, without the trailing slash
 - **Model ID**: exact model identifier supplied by the provider
@@ -42,7 +42,7 @@ The provider must allow browser CORS requests. If it does not, use a server-side
 
 ## Important limitations
 
-- This is an MVP, not a full Bolt/Lovable/Cursor replacement.
+- The built-in Local Engine is deterministic and template/rule-based; it is not a general-purpose language model and cannot replace ChatGPT-level reasoning.\n- This is an MVP, not a full Bolt/Lovable/Cursor replacement.
 - The browser sends the configured key directly to the selected provider. Avoid saving keys on shared devices.
 - Provider quotas, pricing, and model availability are controlled by the provider. No unlimited free inference is promised.
 - Generated code runs in a sandboxed iframe. This is a preview, not a secure server-side build/runtime environment.
