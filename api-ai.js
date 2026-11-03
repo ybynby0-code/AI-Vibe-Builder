@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   const STORAGE_KEY = 'vibeforge-gemini-api-key';
-  const MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.1-flash-lite'];
+  const MODELS = ['gemini-3.6-flash', 'gemini-3.1-flash-lite', 'gemini-3.8-flash'];
   const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
   let activeModel = MODELS[0];
 
@@ -95,5 +95,5 @@
       (lastError && lastError.message ? lastError.message : '알 수 없는 서버 오류'));
   }
 
-  window.VibeForgeAPI = { configure, status, generate, MODEL };
+  window.VibeForgeAPI = { configure, status, generate, MODELS: MODELS.slice() };
 })();
