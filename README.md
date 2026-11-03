@@ -44,3 +44,19 @@ The current runtime calls the Gemini API model `gemini-3.8-flash`. Google provid
 - `api-ai.js`: Gemini API runtime.
 - `browser-ai.js`: legacy browser-local inference runtime, no longer loaded by the app.
 - `local-engine.js`: legacy template engine, no longer used for chat or generation.
+
+
+## VibeForge Studio UI upgrade (v2.0.0)
+
+The existing editor and Gemini workflow remain in place. The Studio layer adds practical workspace controls:
+
+- Refined dark workspace styling, responsive layout refinements, and optional light theme.
+- File search and quick creation buttons for HTML, CSS, and JavaScript files.
+- Editor toolbar: copy current file, download current file, find/replace, indentation cleanup, and font-size controls.
+- Command palette with `Ctrl/⌘ + K` for common editor and project actions.
+- Keyboard shortcuts: save (`Ctrl/⌘ + S`), find/replace (`Ctrl/⌘ + F`), copy (`Ctrl/⌘ + Shift + C`), and editor font sizing.
+- Live editor statistics for active file, line count, and word count.
+- Quick file rename, JSON formatting, and theme preference persistence.
+- New UI files are separated into `studio-upgrade.css` and `studio-upgrade.js`; the original project generator and preview remain intact.
+
+These are browser-local workspace tools. They do not add a cloud terminal, Node.js runtime, server-side execution, multi-user collaboration, or unlimited AI inference. Gemini API availability and quotas remain controlled by Google.
