@@ -1,52 +1,46 @@
-# VibeForge — Local Engine Builder
+# VibeForge — Browser AI Builder
 
-VibeForge is a mobile-first browser workspace that uses its built-in local rule-based engine only. It does not connect to external AI providers and does not require an API key.
+VibeForge is a mobile-first browser workspace with an on-device language model. Chat and generation run locally in the browser after the model is downloaded and cached.
 
 ## Included
 
+- Browser-local AI chat using Transformers.js
+- Qwen2.5-0.5B-Instruct ONNX model from Hugging Face
+- WebGPU acceleration when available, with a WASM fallback
+- Model download progress and runtime status in the UI
 - File explorer and in-browser code editor
 - Sandboxed HTML/CSS/JavaScript preview
 - Preview error capture for JavaScript errors, unhandled promise rejections, and console errors
-- Local engine project generation for todo apps, calculators, quizzes, reaction games, store demos, dashboards, portfolios, and landing pages
-- Multi-file project updates from supported local rules
-- Mobile-first generated layouts and browser-local demo data
-- Local browser autosave
+- AI-generated project files applied to the current workspace
+- Local browser autosave and chat history
 - Undo and redo history
 - ZIP export (JSZip CDN; text-file fallback if unavailable)
 - React/Vite starter project scaffolding
 
-## Local engine
+## Browser AI
 
-All prompts are processed by `local-engine.js`. External API settings and network-based model calls have been removed.
+The runtime is in `browser-ai.js` and uses `@huggingface/transformers` 3.8.1 with the model `onnx-community/Qwen2.5-0.5B-Instruct`.
 
-The current engine is deterministic and rule/template-based, not a trained large language model. It recognizes supported request patterns and generates corresponding project files. It cannot yet understand arbitrary requests or reason with ChatGPT-level flexibility. Its capabilities can be expanded by implementing more intent handlers, code transformations, project analysis, and validation rules.
+1. Open the GitHub Pages site over HTTPS.
+2. Tap **AI 모델 불러오기**.
+3. Keep the page open while the model files download. The initial download is roughly several hundred MB; the browser cache is used on later visits.
+4. When the status says **모델 준비 완료**, ask a question or request a project.
 
-Try prompts such as:
-
-- `할 일 관리 앱 만들어줘`
-- `계산기 만들어줘`
-- `반응속도 게임 만들어줘`
-
-## React + Vite projects
-
-Use the **React/Vite** button to create a starter containing `package.json`, Vite config, React entry point, app component, and CSS. Export the project as ZIP, then run `npm install` and `npm run dev` in a Node.js environment. The in-browser preview currently supports plain HTML/CSS/JS, not Vite bundling.
-
-## Run
-
-Open `index.html` in a modern browser, or publish this repository with GitHub Pages / another static host.
+The runtime tries WebGPU first and falls back to the default WASM backend if WebGPU is unavailable or initialization fails. Actual speed depends on the browser, GPU, available memory, and device thermal state.
 
 ## Important limitations
 
-- The local engine is not a general-purpose trained language model.
-- This is an MVP, not a full Bolt/Lovable/Cursor replacement.
-- Generated code runs in a sandboxed iframe, not a secure server-side runtime.
-- Projects are stored in the current browser's localStorage unless exported. Clearing browser data can erase them.
-- React/Vite scaffolding is provided, but package installation and build execution are not performed in the browser.
+- This is a small 0.5B-parameter local model, not a ChatGPT-class model. It can answer general prompts, but reasoning, Korean fluency, factual accuracy, and long code generation are limited.
+- Browser-local inference does not require an AI API key and does not send chat prompts to an AI inference server. The model and runtime library are downloaded from public hosting services.
+- The model must be downloaded at least once. Clearing browser site data may remove its cache.
+- A mobile browser may terminate a large model load when memory is low. Close other tabs and retry if loading fails.
+- Generated front-end demos run in the local preview. Real multi-user chat, secure authentication, shared databases, and server-side services still require a backend.
+- React/Vite projects are exported as files; this static preview does not run a Vite build.
 
-## Deploy
+## Development notes
 
-Enable GitHub Pages for the repository and select the default branch with `/(root)`. The entry point is `index.html`.
+- `index.html`: mobile-first IDE UI and project workspace.
+- `browser-ai.js`: local Transformers.js inference runtime.
+- `local-engine.js`: legacy template engine, retained in the repository but no longer used for chat or generation.
 
-## License
-
-No license has been added yet. Add one before redistributing the project.
+No AI API key is configured or required.
