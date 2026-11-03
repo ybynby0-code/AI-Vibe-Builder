@@ -46,9 +46,9 @@ The current runtime calls the Gemini API model `gemini-3.8-flash`. Google provid
 - `local-engine.js`: legacy template engine, no longer used for chat or generation.
 
 
-## VibeForge Studio and project-aware AI update (v2.1.0)
+## VibeForge Studio and project-aware AI update (v2.2.0)
 
-The existing editor and Gemini workflow remain in place. The Studio layer adds practical workspace controls:
+Gemini now uses Gemini 3.8 Flash as the primary model, with Gemini 3.6 Flash and Gemini 3.1 Flash-Lite as fallbacks. For project-edit requests, the current project files are included as context and the model returns structured JSON containing complete contents for changed files.
 
 - Refined dark workspace styling, responsive layout refinements, and optional light theme.
 - File search and quick creation buttons for HTML, CSS, and JavaScript files.
