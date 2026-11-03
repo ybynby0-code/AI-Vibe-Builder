@@ -2,8 +2,9 @@
 (function () {
   'use strict';
   const STORAGE_KEY = 'vibeforge-gemini-api-key';
-  const MODEL = 'gemini-3.8-flash';
-  const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/' + MODEL + ':generateContent';
+  const MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.1-flash-lite'];
+  const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
+  let activeModel = MODELS[0];
 
   function getKey() {
     try { return localStorage.getItem(STORAGE_KEY) || ''; } catch (_) { return ''; }
@@ -15,7 +16,7 @@
     return status();
   }
   function status() {
-    return { configured: Boolean(getKey()), provider: 'Google Gemini', model: MODEL };
+    return { configured: Boolean(getKey()), provider: 'Google Gemini', model: activeModel, fallbackModels: MODELS.slice(1) };
   }
   const SYSTEM = [
     '당신은 VibeForge의 한국어 범용 AI이자 전문 소프트웨어 개발 도우미입니다.',
@@ -42,33 +43,56 @@
         contents[contents.length - 1].parts[0].text !== prompt) {
       contents.push({ role: 'user', parts: [{ text: prompt }] });
     }
-    const response = await fetch(ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: SYSTEM }] },
-        contents,
-        generationConfig: { temperature: 0.45, topP: 0.9, maxOutputTokens: 8192 }
-      })
-    });
-    let data;
-    try { data = await response.json(); } catch (_) { data = {}; }
-    if (!response.ok) {
-      const detail = data && data.error && data.error.message ? data.error.message : 'HTTP ' + response.status;
-      if (response.status === 400 || response.status === 403) {
-        throw new Error('Gemini API 요청이 거부되었습니다. API 키와 사용 가능한 모델을 확인해 주세요. (' + detail + ')');
+
+    let lastError = null;
+    for (const model of MODELS) {
+      activeModel = model;
+      for (let attempt = 0; attempt < 2; attempt++) {
+        let response;
+        try {
+          response = await fetch(ENDPOINT + model + ':generateContent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: SYSTEM }] },
+              contents,
+              generationConfig: { temperature: 0.45, topP: 0.9, maxOutputTokens: 8192 }
+            })
+          });
+        } catch (networkError) {
+          lastError = new Error('네트워크 연결 실패: ' + (networkError && networkError.message ? networkError.message : String(networkError)));
+          if (attempt === 0) { await new Promise(resolve => setTimeout(resolve, 1200)); continue; }
+          break;
+        }
+
+        let data;
+        try { data = await response.json(); } catch (_) { data = {}; }
+        if (response.ok) {
+          const parts = data && data.candidates && data.candidates[0] &&
+            data.candidates[0].content && data.candidates[0].content.parts;
+          const answer = Array.isArray(parts) ? parts.map(part => part.text || '').join('') : '';
+          if (!answer.trim()) {
+            const reason = data && data.candidates && data.candidates[0] && data.candidates[0].finishReason;
+            throw new Error('AI가 빈 응답을 반환했습니다.' + (reason ? ' 종료 사유: ' + reason : ''));
+          }
+          return { text: answer.trim(), provider: 'Google Gemini', model };
+        }
+
+        const detail = data && data.error && data.error.message ? data.error.message : 'HTTP ' + response.status;
+        const status = response.status;
+        const temporary = status === 500 || status === 502 || status === 503 || status === 504 ||
+          (status === 429 && /capacity|high demand|temporar|overload/i.test(detail));
+        lastError = new Error('HTTP ' + status + ': ' + detail);
+        if (!temporary) {
+          if (status === 429) throw new Error('Gemini API 사용 한도에 도달했습니다. Google AI Studio에서 할당량을 확인해 주세요. (' + detail + ')');
+          if (status === 400 || status === 403) throw new Error('Gemini API 키 또는 요청 설정을 확인해 주세요. (' + detail + ')');
+          throw lastError;
+        }
+        if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 1400));
       }
-      if (response.status === 429) throw new Error('Gemini 무료 사용 한도 또는 요청 속도 제한에 도달했습니다. 잠시 후 다시 시도해 주세요. (' + detail + ')');
-      throw new Error('Gemini API 오류: ' + detail);
     }
-    const parts = data && data.candidates && data.candidates[0] &&
-      data.candidates[0].content && data.candidates[0].content.parts;
-    const answer = Array.isArray(parts) ? parts.map(part => part.text || '').join('') : '';
-    if (!answer.trim()) {
-      const reason = data && data.candidates && data.candidates[0] && data.candidates[0].finishReason;
-      throw new Error('AI가 빈 응답을 반환했습니다.' + (reason ? ' 종료 사유: ' + reason : ''));
-    }
-    return { text: answer.trim(), provider: 'Google Gemini', model: MODEL };
+    throw new Error('기본 모델과 대체 모델 모두 일시적으로 응답하지 않습니다. 잠시 후 다시 시도해 주세요. 마지막 오류: ' +
+      (lastError && lastError.message ? lastError.message : '알 수 없는 서버 오류'));
   }
 
   window.VibeForgeAPI = { configure, status, generate, MODEL };
