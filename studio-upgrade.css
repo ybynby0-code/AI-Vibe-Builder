@@ -37,3 +37,90 @@ body.vf-light .vf-dialog input,body.vf-light .vf-dialog textarea{background:#f7f
 @media(max-width:1050px){.layout{grid-template-columns:210px minmax(0,1fr) 330px}}
 @media(max-width:850px){.layout{grid-template-columns:minmax(0,1fr)}.vf-toolbar{gap:5px;padding:7px}.vf-toolbar button{padding:6px 7px;font-size:11px}.vf-statbar{overflow:auto}.vf-side-tools{padding:9px}.vf-modal{padding-top:9vh}}
 @media(max-width:430px){.top{gap:7px}.logo{font-size:16px}.logo:before{width:22px;height:22px;margin-right:4px}.vf-toolbar .vf-chip{display:none}.vf-toolrow{grid-template-columns:repeat(3,minmax(0,1fr))}.vf-statbar span:nth-child(2){display:none}}
+
+
+/* VibeForge 2.4 — restrained workspace redesign */
+:root{
+  --bg:#0b0d11;--panel:#111419;--panel2:#191e25;--line:#272d36;
+  --muted:#8b95a3;--text:#e7ebf0;--accent:#6d91f5;--green:#67c99a;
+  --vf-shadow:0 20px 60px #0008;
+}
+body{background:var(--bg);color:var(--text);font-family:Inter,"Pretendard",system-ui,sans-serif;letter-spacing:-.012em}
+button{border-radius:7px;transition:background .14s,border-color .14s,color .14s}
+button:hover{border-color:#48566d}
+.top{height:54px;background:#101318;box-shadow:none;padding:0 18px;gap:14px}
+.logo{font-size:16px;letter-spacing:-.6px}
+.logo:before{content:none}
+.logo b{color:#9bb3ff}
+.projectname{font-size:12px;color:#a0a8b4}
+#exportBtn{background:#1a2029;border-color:#303946;padding:7px 12px;font-size:12px}
+.layout{height:calc(100dvh - 54px);grid-template-columns:238px minmax(300px,1fr) 370px}
+.side,.chat{background:#111419}
+.side{border-right:1px solid #252b34}
+.chat{border-left:1px solid #252b34}
+.sectionhead{height:48px;padding:0 15px;font-size:11px;letter-spacing:.045em;color:#a3adba}
+.sectionhead button{width:27px;height:27px;padding:0;display:grid;place-items:center;border-radius:6px}
+.filelist{padding:6px 9px}
+.file{margin:2px 0;padding:8px 10px;border-radius:6px;font-size:12px;color:#bac3cf}
+.file.active{background:#202a3a;color:#f0f4ff;box-shadow:inset 2px 0 #83a2ff}
+.file.active span:first-child{opacity:.9}
+.sidebottom{padding:12px;border-top:1px solid #252b34}
+.sidebottom button{font-size:12px;background:#171c23;border-color:#303741;padding:9px 10px}
+.sidebottom .notice{font-size:10px;line-height:1.5}
+.main{background:#0c0f13}
+.tabs{height:45px;background:#111419;border-bottom:1px solid #252b34;padding:0 14px;gap:4px}
+.tab{font-size:12px;padding:7px 11px;border-radius:5px}
+.tab.active{background:#222a35;color:#edf2fc;box-shadow:none}
+.mainactions{gap:5px}
+.mainactions button{min-width:31px;height:30px;padding:5px 9px;border-radius:6px;font-size:11px;background:#171c23;border-color:#2b333e}
+.mainactions .primary{background:#6688e8;border-color:#6688e8;color:white;box-shadow:none}
+.editor{background:#0c0f13;color:#d7deea;padding:20px 22px;font-size:13px;line-height:1.72;caret-color:#9bb3ff}
+.preview{background:#fff}
+.chat .sectionhead{justify-content:space-between}
+.chathead-actions button{background:transparent;border-color:transparent;color:#aab3c0;font-size:11px}
+.chathead-actions button:hover{background:#1c222b;border-color:#303946}
+.chatmessages{padding:16px 15px;gap:13px;background:#111419}
+.msg{font-size:12px;line-height:1.7;border-radius:8px;padding:11px 12px}
+.msg.assistant{background:#191f27;border:1px solid #2a323d}
+.msg.user{background:#202a3b;border:1px solid #34445f}
+.msg .role{font-size:10px;letter-spacing:.02em;color:#98a5b7}
+.composer{padding:12px 13px 14px;background:#111419;border-top:1px solid #252b34}
+.composer textarea{min-height:88px;max-height:180px;background:#0c1015;border:1px solid #303945;border-radius:8px;padding:12px;font-size:12px;line-height:1.65}
+.composer textarea:focus{border-color:#6688e8;box-shadow:0 0 0 2px #6688e81c}
+.composefoot{gap:8px}
+.composefoot small{font-size:10px}
+.composefoot .primary{background:#6688e8;border-color:#6688e8;border-radius:6px;padding:8px 13px;font-size:11px}
+.vf-statbar{height:27px;padding:0 14px;background:#111419;border-top:1px solid #252b34;font-size:10px;color:#8792a1}
+.vf-statbar .vf-status{color:#748091}
+.modalback{backdrop-filter:blur(5px);background:#05070dcc}
+.modal{background:#151a21;border:1px solid #333d4a;border-radius:10px;box-shadow:var(--vf-shadow)}
+.modal h2{font-size:17px}
+.modal .field input,.modal .field select{background:#0c1015;border-color:#303945}
+.vf-modal{backdrop-filter:blur(5px);background:#05070dcc}
+.vf-dialog{background:#151a21;border:1px solid #333d4a;border-radius:10px;box-shadow:var(--vf-shadow)}
+.vf-dialog input,.vf-dialog textarea,.vf-dialog select{background:#0c1015;border-color:#303945}
+.vf-command-list button{background:#191f27;border-color:#303945;border-radius:6px}
+.vf-toast{background:#1b222c;border:1px solid #3a4656;border-radius:7px;font-size:12px}
+#vfToolbar,#vfSideTools,#vfWelcome{display:none!important}
+@media(max-width:1050px){.layout{grid-template-columns:210px minmax(0,1fr) 330px}}
+@media(max-width:850px){
+ .layout{grid-template-columns:minmax(0,1fr)}
+ .top{height:52px;padding:0 10px;gap:8px}
+ .layout{height:calc(100dvh - 52px)}
+ .layout[data-view="chat"] .chat,.layout[data-view="files"] .side{inset:52px 0 0}
+ .mobilebar button{font-size:11px;border-radius:6px;background:#191f27;border-color:#303945}
+ .tabs{height:43px;padding:0 8px}
+ .mainactions{gap:3px}
+ .mainactions button{padding:5px 7px}
+ .editor{padding:15px 13px;font-size:12px}
+ .chatmessages{padding:12px}
+ .composer{padding:10px}
+ .vf-statbar{font-size:9px}
+}
+@media(max-width:430px){
+ .logo{font-size:14px}
+ #exportBtn{font-size:10px;padding:6px 8px}
+ .mainactions #viteTemplateBtn{display:none}
+ .mainactions button{min-width:28px}
+ .composefoot small{max-width:55%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
