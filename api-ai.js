@@ -3,7 +3,7 @@
   'use strict';
 
   const STORAGE_KEY = 'vibeforge-gemini-api-key';
-  const MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.1-flash-lite'];
+  const MODELS = ['gemini-3.8-flash', 'gemini-3.6-flash'];
   const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/';
   let activeModel = MODELS[0];
 
@@ -50,11 +50,11 @@
     const selected = [];
     let total = 0;
     for (const name of ordered) {
-      if (selected.length >= 24 || typeof files[name] !== 'string') continue;
+      if (selected.length >= 12 || typeof files[name] !== 'string') continue;
       const content = files[name];
-      const allowance = name === active ? 18000 : 7000;
+      const allowance = name === active ? 16000 : 2800;
       const clipped = content.length > allowance ? content.slice(0, allowance) + '\n[파일 내용 일부 생략: 전체 파일을 수정할 때는 제공된 부분을 기준으로 안전하게 변경하세요.]' : content;
-      if (total + clipped.length > 56000 && selected.length > 0) continue;
+      if (total + clipped.length > 32000 && selected.length > 0) continue;
       selected.push({ path: name, content: clipped });
       total += clipped.length;
     }
@@ -71,12 +71,12 @@
     if (!key) throw new Error('Gemini API 키가 설정되지 않았습니다. 먼저 API 설정을 열어 키를 저장해 주세요.');
 
     const projectTask = isProjectTask(prompt);
-    const previous = Array.isArray(history) ? history.slice(-10) : [];
+    const previous = Array.isArray(history) ? history.slice(-6) : [];
     const contents = previous
       .filter(item => item && (item.role === 'user' || item.role === 'assistant') && typeof item.content === 'string')
       .map(item => ({
         role: item.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: item.content.slice(0, 10000) }]
+        parts: [{ text: item.content.slice(0, item.role === 'user' ? 1800 : 1200) }]
       }));
 
     const latestText = String(prompt || '') + (projectTask ? buildProjectContext(project) : '');
@@ -89,57 +89,52 @@
     let lastError = null;
     for (const model of MODELS) {
       activeModel = model;
-      for (let attempt = 0; attempt < 2; attempt++) {
-        let response;
-        try {
-          const generationConfig = {
-            temperature: projectTask ? 0.25 : 0.55,
-            topP: 0.9,
-            maxOutputTokens: 8192
-          };
-          if (projectTask) generationConfig.responseMimeType = 'application/json';
-          response = await fetch(ENDPOINT + model + ':generateContent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: SYSTEM }] },
-              contents,
-              generationConfig
-            })
-          });
-        } catch (networkError) {
-          lastError = new Error('네트워크 연결 실패: ' + (networkError && networkError.message ? networkError.message : String(networkError)));
-          if (attempt === 0) { await new Promise(resolve => setTimeout(resolve, 1200)); continue; }
-          break;
-        }
+      let response;
+      try {
+        const generationConfig = {
+          maxOutputTokens: 8192,
+          thinkingConfig: { thinkingLevel: projectTask ? 'medium' : 'low' }
+        };
+        if (projectTask) generationConfig.responseMimeType = 'application/json';
+        response = await fetch(ENDPOINT + model + ':generateContent', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+          body: JSON.stringify({
+            systemInstruction: { parts: [{ text: SYSTEM }] },
+            contents,
+            generationConfig
+          })
+        });
+      } catch (networkError) {
+        lastError = new Error('네트워크 연결 실패: ' + (networkError && networkError.message ? networkError.message : String(networkError)));
+        break;
+      }
 
-        let data;
-        try { data = await response.json(); } catch (_) { data = {}; }
-        if (response.ok) {
-          const candidate = data && data.candidates && data.candidates[0];
-          const parts = candidate && candidate.content && candidate.content.parts;
-          const answer = Array.isArray(parts) ? parts.map(part => part.text || '').join('') : '';
-          if (!answer.trim()) {
-            const reason = candidate && candidate.finishReason;
-            throw new Error('AI가 빈 응답을 반환했습니다.' + (reason ? ' 종료 사유: ' + reason : ''));
-          }
-          return { text: answer.trim(), provider: 'Google Gemini', model, mode: projectTask ? 'project' : 'chat' };
+      let data;
+      try { data = await response.json(); } catch (_) { data = {}; }
+      if (response.ok) {
+        const candidate = data && data.candidates && data.candidates[0];
+        const parts = candidate && candidate.content && candidate.content.parts;
+        const answer = Array.isArray(parts) ? parts.map(part => part.text || '').join('') : '';
+        if (!answer.trim()) {
+          const reason = candidate && candidate.finishReason;
+          throw new Error('AI가 빈 응답을 반환했습니다.' + (reason ? ' 종료 사유: ' + reason : ''));
         }
+        return { text: answer.trim(), provider: 'Google Gemini', model, mode: projectTask ? 'project' : 'chat' };
+      }
 
-        const detail = data && data.error && data.error.message ? data.error.message : 'HTTP ' + response.status;
-        const statusCode = response.status;
-        const temporary = statusCode === 500 || statusCode === 502 || statusCode === 503 || statusCode === 504 ||
-          (statusCode === 429 && /capacity|high demand|temporar|overload/i.test(detail));
-        lastError = new Error('HTTP ' + statusCode + ': ' + detail);
-        if (!temporary) {
-          if (statusCode === 429) throw new Error('Gemini API 사용 한도에 도달했습니다. Google AI Studio에서 할당량을 확인해 주세요. (' + detail + ')');
-          if (statusCode === 400 || statusCode === 403) throw new Error('Gemini API 키 또는 요청 설정을 확인해 주세요. (' + detail + ')');
-          throw lastError;
-        }
-        if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 1400));
+      const detail = data && data.error && data.error.message ? data.error.message : 'HTTP ' + response.status;
+      const statusCode = response.status;
+      const temporary = statusCode === 500 || statusCode === 502 || statusCode === 503 || statusCode === 504 ||
+        (statusCode === 429 && /capacity|high demand|temporar|overload/i.test(detail));
+      lastError = new Error('HTTP ' + statusCode + ': ' + detail);
+      if (!temporary) {
+        if (statusCode === 429) throw new Error('Gemini API 사용 한도에 도달했습니다. Google AI Studio에서 할당량을 확인해 주세요. (' + detail + ')');
+        if (statusCode === 400 || statusCode === 403) throw new Error('Gemini API 키 또는 요청 설정을 확인해 주세요. (' + detail + ')');
+        throw lastError;
       }
     }
-    throw new Error('기본 모델과 대체 모델 모두 일시적으로 응답하지 않습니다. 잠시 후 다시 시도해 주세요. 마지막 오류: ' +
+    throw new Error('Gemini 기본 모델과 빠른 대체 모델이 응답하지 않습니다. 잠시 후 다시 시도해 주세요. 마지막 오류: ' +
       (lastError && lastError.message ? lastError.message : '알 수 없는 서버 오류'));
   }
 
