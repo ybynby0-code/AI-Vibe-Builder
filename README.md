@@ -6,6 +6,8 @@ A mobile-first browser workspace for creating and editing small web projects wit
 
 - File explorer and in-browser code editor
 - Live HTML preview in a sandboxed iframe
+- Preview error capture for JavaScript errors, unhandled promise rejections, and `console.error`
+- AI repair workflow that sends the preview error and selected source file back to the model
 - AI chat that can generate or update multiple project files
 - Local browser autosave
 - ZIP export (JSZip CDN; text-file fallback if unavailable)
