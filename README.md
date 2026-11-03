@@ -14,6 +14,10 @@ A mobile-first browser workspace for creating and editing small web projects wit
 - Responsive mobile layout
 - Configurable API endpoint, model ID, temperature, and API key
 
+## React + Vite projects
+
+Use the **React/Vite** button to replace the current project with a starter containing `package.json`, Vite config, React entry point, app component, and CSS. Export the project as ZIP, then run `npm install` and `npm run dev` in a Node.js environment. The in-browser preview currently supports plain HTML/CSS/JS, not Vite bundling.
+
 ## Run
 
 Open `index.html` in a modern browser, or publish this repository with GitHub Pages / Netlify.
