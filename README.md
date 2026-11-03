@@ -1,13 +1,11 @@
-# VibeForge — Browser AI Builder
+# VibeForge — AI Builder
 
-VibeForge is a mobile-first browser workspace with an on-device language model. Chat and generation run locally in the browser after the model is downloaded and cached.
+VibeForge is a mobile-first browser workspace with a hosted Gemini API assistant. It does not download a language model to the device.
 
 ## Included
 
-- Browser-local AI chat using Transformers.js
-- Qwen2.5-0.5B-Instruct ONNX model from Hugging Face
-- WebGPU acceleration when available, with a WASM fallback
-- Model download progress and runtime status in the UI
+- Google Gemini API chat and code generation
+- API key entry in the app; the key is stored in this browser's local storage
 - File explorer and in-browser code editor
 - Sandboxed HTML/CSS/JavaScript preview
 - Preview error capture for JavaScript errors, unhandled promise rejections, and console errors
@@ -17,30 +15,32 @@ VibeForge is a mobile-first browser workspace with an on-device language model. 
 - ZIP export (JSZip CDN; text-file fallback if unavailable)
 - React/Vite starter project scaffolding
 
-## Browser AI
+## Configure Gemini
 
-The runtime is in `browser-ai.js` and uses `@huggingface/transformers` 3.8.1 with the model `onnx-community/Qwen2.5-0.5B-Instruct`.
+1. Create an API key in [Google AI Studio](https://aistudio.google.com/app/apikey).
+2. Open VibeForge and tap **API 설정**.
+3. Paste the key and save it.
+4. Ask a question or request a project.
 
-1. Open the GitHub Pages site over HTTPS.
-2. Tap **AI 모델 불러오기**.
-3. Keep the page open while the model files download. The initial download is roughly several hundred MB; the browser cache is used on later visits.
-4. When the status says **모델 준비 완료**, ask a question or request a project.
+The current runtime calls the Gemini API model `gemini-3.8-flash`. Google provides a free tier for eligible models, but requests and rate limits are not unlimited and may change. Check the usage and limits shown in Google AI Studio.
 
-The runtime tries WebGPU first and falls back to the default WASM backend if WebGPU is unavailable or initialization fails. Actual speed depends on the browser, GPU, available memory, and device thermal state.
+## Privacy and key security
+
+- The language model runs on Google's servers. Prompts and conversation context are sent to the Gemini API.
+- The API key is stored in this browser's local storage and is not committed to this GitHub repository.
+- A key used directly in a public browser app can be inspected by the person using that browser. This setup is intended for personal use, not as a secure shared public service. A production multi-user app should call Gemini through a server-side proxy and keep the key on the server.
+- Google's free-tier data-use terms may differ from paid-tier terms. Do not send passwords, personal secrets, or sensitive information.
 
 ## Important limitations
 
-- This is a small 0.5B-parameter local model, not a ChatGPT-class model. It can answer general prompts, but reasoning, Korean fluency, factual accuracy, and long code generation are limited.
-- Browser-local inference does not require an AI API key and does not send chat prompts to an AI inference server. The model and runtime library are downloaded from public hosting services.
-- The model must be downloaded at least once. Clearing browser site data may remove its cache.
-- A mobile browser may terminate a large model load when memory is low. Close other tabs and retry if loading fails.
-- Generated front-end demos run in the local preview. Real multi-user chat, secure authentication, shared databases, and server-side services still require a backend.
+- Free API use has provider-defined rate and token limits; it is not unlimited.
+- If the quota is exhausted, wait for the limit reset or use another configured provider.
+- Real multi-user chat, secure authentication, shared databases, and server-side services still require a backend.
 - React/Vite projects are exported as files; this static preview does not run a Vite build.
 
 ## Development notes
 
 - `index.html`: mobile-first IDE UI and project workspace.
-- `browser-ai.js`: local Transformers.js inference runtime.
-- `local-engine.js`: legacy template engine, retained in the repository but no longer used for chat or generation.
-
-No AI API key is configured or required.
+- `api-ai.js`: Gemini API runtime.
+- `browser-ai.js`: legacy browser-local inference runtime, no longer loaded by the app.
+- `local-engine.js`: legacy template engine, no longer used for chat or generation.
