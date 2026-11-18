@@ -28,3 +28,8 @@
 .map-wrap canvas:active{cursor:grabbing}
 .map-overlay{z-index:2;text-align:center;padding:18px;background:#08131a55}
 @media(max-width:760px){.map-panel{min-height:440px}.map-wrap{min-height:390px}.map-wrap canvas{min-height:390px}}
+
+/* Expanded world atlas viewport */
+.map-panel{min-width:0}.map-wrap{min-height:650px;height:min(72vh,760px);position:relative}.map-wrap canvas{min-height:650px;height:100%}.workspace{grid-template-columns:minmax(0,1.7fr) minmax(290px,.72fr)}.map-panel{min-height:720px}.map-tools .mini-btn{min-width:34px;padding:8px 11px}.map-mode{max-width:125px;font-size:9px;padding:8px}
+@media(max-width:1050px){.workspace{grid-template-columns:minmax(0,1fr)}.map-panel{min-height:620px}.map-wrap{height:580px;min-height:580px}.map-wrap canvas{min-height:580px}}
+@media(max-width:760px){.map-panel{min-height:0}.map-wrap{height:min(68vh,620px);min-height:520px}.map-wrap canvas{min-height:520px}.map-tools .mini-btn{min-width:30px;padding:6px 8px}.map-mode{max-width:96px}}
