@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.0';
+import { Imperium3DMap } from './3d-map.js';
 if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 const SUPABASE_URL='https://wqhudsyehjfdtzhstsnf.supabase.co';
 const SUPABASE_KEY='sb_publishable_044jWM1WJOqi8W3g3rZkOQ_5LLeIHes';
@@ -6,6 +7,7 @@ const supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true
 const $=s=>document.querySelector(s);
 const state={user:null,world:null,nation:null,provinces:[],nations:[],players:[],armies:[],wars:[],treaties:[],events:[],chat:[],selected:null,channel:null,presence:{},view:'map',mapMode:'political',mapZoom:1,pendingOrder:null,authMode:'login'};
 const colors={plains:'#657f72',forest:'#47766c',hills:'#8b8a70',coast:'#4d8290',mountain:'#8a8d91',river:'#548aa0',desert:'#9b8965'};
+let map3d=null;
 const fmt=n=>new Intl.NumberFormat('ko-KR').format(Number(n||0));
 function toast(s){const t=$('#toast');t.textContent=s;t.classList.add('show');clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.classList.remove('show'),2600)}
 function modal(id,open=true){$('#'+id).classList.toggle('open',open)}
@@ -47,55 +49,17 @@ function renderInspector(){
  }const n=state.nations.find(x=>x.id===p.nation_id);$('#inspectTitle').textContent=p.name;$('#inspectBody').innerHTML='<div class="nation-summary"><i class="nation-swatch" style="background:'+(n?.color||'#63788a')+'"></i><div><strong>'+escapeHtml(n?.name||'중립 영토')+'</strong><small>'+escapeHtml(n?.tag||'NEUTRAL')+' · '+escapeHtml(p.terrain)+'</small></div></div><div class="province-stats"><div><small>인구</small><b>'+fmt(p.population)+'</b></div><div><small>개발도</small><b>'+p.development+'</b></div><div><small>요새</small><b>'+p.fort_level+'</b></div></div><div class="province-stats"><div><small>식량</small><b>'+fmt(p.resources.food)+'</b></div><div><small>철</small><b>'+fmt(p.resources.iron)+'</b></div><div><small>석유</small><b>'+fmt(p.resources.oil)+'</b></div></div>'}
 function renderEvents(){$('#eventList').innerHTML=state.events.length?state.events.map(e=>'<div class="event-item"><b>'+escapeHtml(e.title)+'</b><small>TURN '+e.turn_no+' · '+escapeHtml(e.body)+'</small></div>').join(''):'<div class="empty-state">아직 기록된 사건이 없습니다.</div>'}
 function renderChat(){$('#chatMessages').innerHTML=state.chat.map(m=>'<div class="chat-line"><b>['+escapeHtml(m.nation_tag||'WORLD')+']</b>'+escapeHtml(m.body)+'<time>'+new Date(m.created_at).toLocaleTimeString('ko-KR',{hour:'2-digit',minute:'2-digit'})+'</time></div>').join('')||'<div class="empty-state">첫 메시지를 보내십시오.</div>';$('#chatMessages').scrollTop=$('#chatMessages').scrollHeight}
-function hexPath(ctx,x,y,r){ctx.beginPath();for(let i=0;i<6;i++){const a=Math.PI/3*i+Math.PI/6,px=x+r*Math.cos(a),py=y+r*Math.sin(a);if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py)}ctx.closePath()}
 function renderMap(){
- const c=$('#worldMap'),rect=c.getBoundingClientRect(),dpr=Math.min(devicePixelRatio||1,2);
- if(!rect.width||!rect.height)return;
- c.width=Math.round(rect.width*dpr);c.height=Math.round(rect.height*dpr);
- const ctx=c.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
- const W=rect.width,H=rect.height;ctx.clearRect(0,0,W,H);
- const ocean=ctx.createLinearGradient(0,0,W,H);ocean.addColorStop(0,'#173747');ocean.addColorStop(.55,'#102b3b');ocean.addColorStop(1,'#0a1c2a');ctx.fillStyle=ocean;ctx.fillRect(0,0,W,H);
- ctx.save();ctx.globalAlpha=.15;ctx.strokeStyle='#9bbdc2';ctx.lineWidth=.55;
- for(let x=0;x<W;x+=42){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}
- for(let y=0;y<H;y+=42){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}ctx.restore();
- const maxCol=8,maxRow=6,base=Math.min(W/(maxCol+maxRow*.62)*.9,H/(maxRow+maxCol*.34)*.83),r=Math.max(13,base*.47*state.mapZoom);
- const stepX=r*1.72,stepY=r*1.22,originX=W*.5,originY=H*.48-(maxCol+maxRow)*stepY*.19;
- const project=(col,row)=>({x:originX+(col-row)*stepX*.52,y:originY+(col+row)*stepY*.52});
- const points=state.provinces.map(p=>{const q=project(p.x/2,p.y/2);return {p,x:q.x,y:q.y}});
- state.mapLayout=[];
- // Cartographic sea routes and province links
- ctx.save();ctx.strokeStyle='#8eb7bd28';ctx.lineWidth=1;
- for(const q of points){for(const z of points){if(q.p.province_no<z.p.province_no&&Math.hypot(q.x-z.x,q.y-z.y)<r*2.2){ctx.beginPath();ctx.moveTo(q.x,q.y);ctx.lineTo(z.x,z.y);ctx.stroke()}}}ctx.restore();
- const ordered=[...points].sort((a,b)=>a.y-b.y);
- for(const q of ordered){
-  const p=q.p,n=state.nations.find(v=>v.id===p.nation_id),terrain=p.terrain||'plains',selected=state.selected===p.id;
-  const col=state.mapMode==='terrain'?(colors[terrain]||'#657f72'):state.mapMode==='relief'?({plains:'#718b79',forest:'#416c5e',hills:'#958c6c',coast:'#628e91',mountain:'#a0a5a4',river:'#548aa0',desert:'#b69a68'}[terrain]||'#718b79'):(n?.color||'#607d75');
-  const top=ctx.createLinearGradient(q.x-r,q.y-r,q.x+r,q.y+r);top.addColorStop(0,lighten(col,25));top.addColorStop(1,darken(col,24));
-  const verts=[];for(let i=0;i<6;i++){const ang=Math.PI/3*i+Math.PI/6;verts.push([q.x+r*Math.cos(ang),q.y+r*.78*Math.sin(ang)])}
-  // raised edge
-  ctx.beginPath();verts.forEach((v,i)=>{const x=v[0],y=v[1]+r*.24;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath();ctx.fillStyle='#07131d';ctx.fill();
-  ctx.beginPath();verts.forEach((v,i)=>{i?ctx.lineTo(v[0],v[1]):ctx.moveTo(v[0],v[1])});ctx.closePath();
-  ctx.shadowColor='#020910aa';ctx.shadowBlur=selected?18:9;ctx.shadowOffsetY=selected?3:5;ctx.fillStyle=top;ctx.fill();ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
-  ctx.strokeStyle=selected?'#fff0bd':n?'#f0dfb055':'#d2e0db55';ctx.lineWidth=selected?2.8:1.15;ctx.stroke();
-  // terrain detail marks
-  ctx.save();ctx.globalAlpha=.45;
-  if(state.mapMode!=='political'){
-   if(terrain==='forest'){for(let k=0;k<3;k++){const tx=q.x+(k-1)*r*.34,ty=q.y+(k%2-.5)*r*.2;ctx.fillStyle='#173e37';ctx.beginPath();ctx.moveTo(tx,ty-r*.22);ctx.lineTo(tx-r*.12,ty+r*.12);ctx.lineTo(tx+r*.12,ty+r*.12);ctx.closePath();ctx.fill()}}
-   else if(terrain==='mountain'||terrain==='hills'){for(let k=0;k<2;k++){const tx=q.x+(k-.5)*r*.42;ctx.fillStyle='#d7d3bf';ctx.beginPath();ctx.moveTo(tx-r*.2,q.y+r*.12);ctx.lineTo(tx,q.y-r*.22);ctx.lineTo(tx+r*.2,q.y+r*.12);ctx.closePath();ctx.fill();ctx.strokeStyle='#4c5c5c';ctx.stroke()}}
-   else if(terrain==='river'||terrain==='coast'){ctx.strokeStyle='#b4d6dc';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(q.x-r*.45,q.y-r*.05);ctx.quadraticCurveTo(q.x,q.y+r*.3,q.x+r*.45,q.y-r*.12);ctx.stroke()}
-   else {ctx.strokeStyle='#e2d4a4';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(q.x-r*.25,q.y+r*.12);ctx.lineTo(q.x+r*.28,q.y-r*.12);ctx.stroke()}
-  }
-  ctx.restore();
-  // capital / settlement marker
-  const isCapital=n&&String(n.capital_province_id||'')===String(p.id);
-  if(isCapital||p.development>=4){ctx.beginPath();ctx.arc(q.x,q.y-r*.35,selected?4:3,0,Math.PI*2);ctx.fillStyle=isCapital?'#ffe1a1':'#e5e9d5';ctx.fill();ctx.strokeStyle='#14212b';ctx.lineWidth=1;ctx.stroke()}
-  ctx.fillStyle='#f4f0df';ctx.font='700 '+Math.max(8,Math.min(11,r*.32))+'px Manrope';ctx.textAlign='center';ctx.textBaseline='middle';ctx.shadowColor='#07121c';ctx.shadowBlur=4;ctx.fillText(String(p.province_no).padStart(2,'0'),q.x,q.y+r*.13);ctx.shadowBlur=0;
-  if(r>28&&state.mapMode==='political'){ctx.font='600 7px "DM Sans"';ctx.fillStyle='#f1e9d2';ctx.fillText(n?.tag||'NEU',q.x,q.y+r*.43)}
-  state.mapLayout.push({p,x:q.x,y:q.y,r:r*.88});
- }
- // compass and map scale
- ctx.save();ctx.fillStyle='#d9c89b';ctx.font='700 9px Manrope';ctx.fillText('N',W-22,22);ctx.strokeStyle='#d9c89b';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(W-18,28);ctx.lineTo(W-18,43);ctx.stroke();ctx.beginPath();ctx.moveTo(W-18,28);ctx.lineTo(W-22,34);ctx.lineTo(W-14,34);ctx.closePath();ctx.fill();ctx.restore();
- $('#mapOverlay').style.display=state.provinces.length?'none':'grid';
+ const canvas=$('#worldMap');if(!canvas)return;
+ try{
+  if(!map3d)map3d=new Imperium3DMap(canvas,p=>{
+   state.selected=p.id;renderInspector();renderMap();
+   $('#mapSelection').textContent=p.name+' / '+(state.nations.find(n=>n.id===p.nation_id)?.tag||'NEUTRAL');
+  });
+  map3d.update(state.provinces,state.nations,state.mapMode,state.selected,state.mapZoom);
+  $('#mapOverlay').style.display=state.provinces.length?'none':'grid';
+  $('#mapOverlay').textContent=state.provinces.length?'':'영토 데이터를 불러오는 중...';
+ }catch(e){console.error('3D map initialization failed',e);$('#mapOverlay').style.display='grid';$('#mapOverlay').textContent='3D 지도를 초기화하지 못했습니다. WebGL 지원 여부를 확인하십시오.'}
 }
 function lighten(hex,amt){return shadeColor(hex,amt)}
 function darken(hex,amt){return shadeColor(hex,-amt)}
@@ -145,7 +109,7 @@ function switchView(v){
 }
 $('#authForm').addEventListener('submit',async e=>{e.preventDefault();const email=$('#authEmail').value.trim(),password=$('#authPassword').value;$('#authMessage').textContent='인증 중...';let r=state.authMode==='signup'?await supabase.auth.signUp({email,password,options:{emailRedirectTo:window.location.href}}):await supabase.auth.signInWithPassword({email,password});if(r.error){$('#authMessage').textContent=errText(r.error);return}if(state.authMode==='signup'&&!r.data.session){$('#authMessage').textContent='인증 메일을 확인한 뒤 로그인하십시오.';return}$('#authMessage').textContent='접속되었습니다.';modal('authModal',false);setUser(r.data.user);await loadLobby()});
 document.querySelectorAll('[data-auth]').forEach(b=>b.onclick=()=>{state.authMode=b.dataset.auth;document.querySelectorAll('[data-auth]').forEach(x=>x.classList.toggle('selected',x===b));$('#authSubmit').innerHTML=(state.authMode==='login'?'로그인':'회원가입')+' <b>→</b>';$('#authMessage').textContent='';$('#authPassword').autocomplete=state.authMode==='login'?'current-password':'new-password'});
-$('#createWorldBtn').onclick=()=>state.user?modal('createModal'):modal('authModal');$('#createForm').addEventListener('submit',async e=>{e.preventDefault();$('#createMessage').textContent='세계 생성 중...';await createWorld($('#newWorldName').value.trim())});$('#refreshWorlds').onclick=loadLobby;$('#worldList').addEventListener('click',e=>{const b=e.target.closest('[data-join]');if(b)enterWorld(b.dataset.join)});$('#accountBtn').onclick=()=>state.user?supabase.auth.signOut():modal('authModal');document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>modal(b.dataset.close,false));$('#backLobby').onclick=showLobby;$('#worldMap').addEventListener('click',mapPick);$('#inspectBody').addEventListener('click',e=>{const b=e.target.closest('[data-treaty]');if(b)respondTreaty(b.dataset.treaty,b.dataset.accept==='true')});$('#mapReset').onclick=()=>{state.selected=null;state.mapZoom=1;renderMap();renderInspector();$('#mapSelection').textContent='영토를 선택하면 상세 정보가 표시됩니다.'};
+$('#createWorldBtn').onclick=()=>state.user?modal('createModal'):modal('authModal');$('#createForm').addEventListener('submit',async e=>{e.preventDefault();$('#createMessage').textContent='세계 생성 중...';await createWorld($('#newWorldName').value.trim())});$('#refreshWorlds').onclick=loadLobby;$('#worldList').addEventListener('click',e=>{const b=e.target.closest('[data-join]');if(b)enterWorld(b.dataset.join)});$('#accountBtn').onclick=()=>state.user?supabase.auth.signOut():modal('authModal');document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>modal(b.dataset.close,false));$('#backLobby').onclick=showLobby;$('#inspectBody').addEventListener('click',e=>{const b=e.target.closest('[data-treaty]');if(b)respondTreaty(b.dataset.treaty,b.dataset.accept==='true')});$('#mapReset').onclick=()=>{state.selected=null;state.mapZoom=1;renderMap();renderInspector();$('#mapSelection').textContent='영토를 선택하면 상세 정보가 표시됩니다.'};
 $('#mapMode').onchange=e=>{state.mapMode=e.target.value;renderMap()};
 $('#mapZoomIn').onclick=()=>{state.mapZoom=Math.min(1.65,state.mapZoom+.12);renderMap()};
 $('#mapZoomOut').onclick=()=>{state.mapZoom=Math.max(.72,state.mapZoom-.12);renderMap()};document.querySelectorAll('[data-order]').forEach(b=>b.onclick=()=>openOrder(b.dataset.order));$('#confirmOrder').onclick=submitOrder;$('#advanceTurnBtn').onclick=advanceTurn;$('#chatForm').addEventListener('submit',sendChat);document.querySelectorAll('.rail-item[data-view]').forEach(b=>b.onclick=()=>switchView(b.dataset.view));$('#soundBtn').onclick=()=>toast('효과음은 현재 비활성화되어 있습니다.');
