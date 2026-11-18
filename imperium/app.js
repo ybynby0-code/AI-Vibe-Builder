@@ -56,7 +56,8 @@ function renderMap(){
    state.selected=p.id;renderInspector();renderMap();
    $('#mapSelection').textContent=p.name+' / '+(state.nations.find(n=>n.id===p.nation_id)?.tag||'NEUTRAL');
   });
-  map3d.update(state.provinces,state.nations,state.mapMode,state.selected,state.mapZoom);
+  if(!state.provinces.length){$('#mapOverlay').style.display='grid';$('#mapOverlay').textContent='영토 데이터를 불러오는 중...';return}
+  map3d.update(state.provinces,state.nations,state.armies,state.mapMode,state.selected,state.mapZoom);
   $('#mapOverlay').style.display=state.provinces.length?'none':'grid';
   $('#mapOverlay').textContent=state.provinces.length?'':'영토 데이터를 불러오는 중...';
  }catch(e){console.error('3D map initialization failed',e);$('#mapOverlay').style.display='grid';$('#mapOverlay').textContent='3D 지도를 초기화하지 못했습니다. WebGL 지원 여부를 확인하십시오.'}
