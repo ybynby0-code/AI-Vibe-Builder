@@ -27,7 +27,7 @@ export class Imperium3DMap{
  makeLabel(text,color='#f3e4bd'){const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.font='bold 28px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#07131dcc';x.fillRect(12,8,232,48);x.fillStyle=color;x.fillText(String(text).slice(0,18),128,32);const tex=new THREE.CanvasTexture(c);const m=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));m.scale.set(2.2,.55,1);return m}
  update(provinces,nations,mode,selected,zoom=1){
   this.provinces=provinces||[];this.nations=nations||[];this.mode=mode;this.selected=selected;
-  while(this.world.children.length){const o=this.world.children.pop();o.geometry?.dispose();if(o.material){if(Array.isArray(o.material))o.material.forEach(m=>m.dispose());else o.material.dispose()}}
+  this.world.traverse(o=>{o.geometry?.dispose();if(o.material){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{m.map?.dispose();m.dispose()})}});this.world.clear();
   this.tiles=[];const nationById=new Map(this.nations.map(n=>[String(n.id),n]));
   const items=this.provinces.map(p=>({p,n:nationById.get(String(p.nation_id))}));const xs=items.map(v=>Number(v.p.x)/2),zs=items.map(v=>Number(v.p.y)/2);const cx=(Math.min(...xs)+Math.max(...xs))/2,cz=(Math.min(...zs)+Math.max(...zs))/2;
   const hex=new THREE.Shape();for(let i=0;i<6;i++){const a=Math.PI/3*i+Math.PI/6,x=Math.cos(a)*.91,z=Math.sin(a)*.91;i?hex.lineTo(x,z):hex.moveTo(x,z)}hex.closePath();
