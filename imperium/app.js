@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.0';
+if('serviceWorker' in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 const SUPABASE_URL='https://wqhudsyehjfdtzhstsnf.supabase.co';
 const SUPABASE_KEY='sb_publishable_044jWM1WJOqi8W3g3rZkOQ_5LLeIHes';
 const supabase=createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
