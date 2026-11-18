@@ -8,15 +8,15 @@ export class Imperium3DMap{
   const sun=new THREE.DirectionalLight('#ffe4b5',3.1);sun.position.set(-12,24,15);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-24;sun.shadow.camera.right=24;sun.shadow.camera.top=24;sun.shadow.camera.bottom=-24;this.scene.add(sun);
   const fill=new THREE.DirectionalLight('#6fa5c8',1.1);fill.position.set(16,12,-18);this.scene.add(fill);
   const sea=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshStandardMaterial({color:'#123b50',roughness:.72,metalness:.12}));sea.rotation.x=-Math.PI/2;sea.position.y=-.55;sea.receiveShadow=true;this.scene.add(sea);
-  this.world=new THREE.Group();this.scene.add(this.world);this.raycaster=new THREE.Raycaster();this.pointer=new THREE.Vector2();this.tiles=[];this.drag=null;this.activePointers=new Map();this.pinchDistance=0;this.yaw=.18;this.pitch=.72;this.distance=33;this.mode='political';this.provinces=[];this.nations=[];this.selected=null;
+  this.world=new THREE.Group();this.scene.add(this.world);this.raycaster=new THREE.Raycaster();this.pointer=new THREE.Vector2();this.tiles=[];this.drag=null;this.activePointers=new Map();this.pinchDistance=0;this.yaw=.18;this.pitch=.72;this.distance=27;this.mode='political';this.provinces=[];this.nations=[];this.selected=null;
   this.bind();this.resize();this.animate();
  }
  bind(){
   this.canvas.addEventListener('pointerdown',e=>{this.activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});this.canvas.setPointerCapture?.(e.pointerId);if(this.activePointers.size===1)this.drag={x:e.clientX,y:e.clientY,moved:false};if(this.activePointers.size===2){const a=[...this.activePointers.values()];this.pinchDistance=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);this.drag=null}});
-  this.canvas.addEventListener('pointermove',e=>{if(!this.activePointers.has(e.pointerId))return;const prev=this.activePointers.get(e.pointerId);this.activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(this.activePointers.size>=2){const a=[...this.activePointers.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(this.pinchDistance>0){this.distance=Math.max(18,Math.min(52,this.distance-(d-this.pinchDistance)*.055));this.updateCamera()}this.pinchDistance=d;return}if(!this.drag)return;const dx=e.clientX-this.drag.x,dy=e.clientY-this.drag.y;if(Math.abs(dx)+Math.abs(dy)>3)this.drag.moved=true;if(this.drag.moved){this.yaw-=dx*.006;this.pitch=Math.max(.25,Math.min(1.25,this.pitch+dy*.004));this.drag.x=e.clientX;this.drag.y=e.clientY;this.updateCamera()}});
+  this.canvas.addEventListener('pointermove',e=>{if(!this.activePointers.has(e.pointerId))return;const prev=this.activePointers.get(e.pointerId);this.activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(this.activePointers.size>=2){const a=[...this.activePointers.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(this.pinchDistance>0){this.distance=Math.max(14,Math.min(58,this.distance-(d-this.pinchDistance)*.07));this.updateCamera()}this.pinchDistance=d;return}if(!this.drag)return;const dx=e.clientX-this.drag.x,dy=e.clientY-this.drag.y;if(Math.abs(dx)+Math.abs(dy)>3)this.drag.moved=true;if(this.drag.moved){this.yaw-=dx*.006;this.pitch=Math.max(.25,Math.min(1.25,this.pitch+dy*.004));this.drag.x=e.clientX;this.drag.y=e.clientY;this.updateCamera()}});
   const endPointer=e=>{if(this.activePointers.size===1&&this.drag&&!this.drag.moved)this.pick(e);this.activePointers.delete(e.pointerId);this.drag=null;this.pinchDistance=0};
   this.canvas.addEventListener('pointerup',endPointer);this.canvas.addEventListener('pointercancel',endPointer);
-  this.canvas.addEventListener('wheel',e=>{e.preventDefault();this.distance=Math.max(18,Math.min(52,this.distance+e.deltaY*.025));this.updateCamera()},{passive:false});
+  this.canvas.addEventListener('wheel',e=>{e.preventDefault();this.distance=Math.max(14,Math.min(58,this.distance+e.deltaY*.035));this.updateCamera()},{passive:false});
   this.canvas.addEventListener('contextmenu',e=>e.preventDefault());
   window.addEventListener('resize',()=>this.resize());
  }
@@ -39,13 +39,18 @@ export class Imperium3DMap{
   this.provinces=provinces||[];this.nations=nations||[];this.armies=armies||[];this.mode=mode;this.selected=selected;
   this.world.traverse(o=>{o.geometry?.dispose();if(o.material){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{m.map?.dispose();m.dispose()})}});this.world.clear();
   this.tiles=[];const nationById=new Map(this.nations.map(n=>[String(n.id),n]));
-  const items=this.provinces.map(p=>({p,n:nationById.get(String(p.nation_id))}));const xs=items.map(v=>Number(v.p.x)/2),zs=items.map(v=>Number(v.p.y)/2);const cx=(Math.min(...xs)+Math.max(...xs))/2,cz=(Math.min(...zs)+Math.max(...zs))/2;
+  const items=this.provinces.map(p=>({p,n:nationById.get(String(p.nation_id))})).sort((a,b)=>Number(a.p.province_no)-Number(b.p.province_no));
+  // 48 land cells arranged as a recognizable simplified world projection.
+  const landRows=['.###....####..','#####..#####..','#####..#####..','.####.####....','..###.####....','...##.##......','..........##..'];
+  const landCells=[];for(let row=0;row<landRows.length;row++)for(let col=0;col<landRows[row].length;col++)if(landRows[row][col]==='#')landCells.push({x:col-6.5,z:row-3});
+  const displayPos=new Map(items.map(({p},i)=>[String(p.id),landCells[i]||{x:Number(p.x)/2,z:Number(p.y)/2}]));
+  const xs=landCells.map(v=>v.x),zs=landCells.map(v=>v.z),cx=0,cz=0;
   const hex=new THREE.Shape();for(let i=0;i<6;i++){const a=Math.PI/3*i+Math.PI/6,x=Math.cos(a)*.91,z=Math.sin(a)*.91;i?hex.lineTo(x,z):hex.moveTo(x,z)}hex.closePath();
   const geometry=new THREE.ExtrudeGeometry(hex,{depth:.23,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.045,bevelThickness:.045});geometry.rotateX(-Math.PI/2);
   for(const {p,n} of items){
    const terrain=p.terrain||'plains',isSelected=String(selected)===String(p.id);const base=this.provinceColor(p,n,mode);
    const mat=new THREE.MeshStandardMaterial({color:this.color(base),roughness:.86,metalness:.02,emissive:isSelected?'#a77b3a':'#000000',emissiveIntensity:isSelected ? 0.28 : 0});
-   const x=(Number(p.x)/2-cx)*1.95,z=(Number(p.y)/2-cz)*1.95;const height=.18+Math.min(1.15,Number(p.development||1)*.09)+(terrain==='mountain'?.35:terrain==='hills'?.15:0);
+   const point=displayPos.get(String(p.id))||{x:Number(p.x)/2,z:Number(p.y)/2};const x=point.x*1.72,z=point.z*1.72;const height=.18+Math.min(1.15,Number(p.development||1)*.09)+(terrain==='mountain'?.35:terrain==='hills'?.15:0);
    const tile=new THREE.Mesh(geometry,mat);tile.position.set(x,height,z);tile.castShadow=true;tile.receiveShadow=true;tile.userData.province=p;this.world.add(tile);this.tiles.push(tile);
    const edge=new THREE.LineSegments(new THREE.EdgesGeometry(geometry),new THREE.LineBasicMaterial({color:isSelected?'#fff0ba':'#d7e3d8',transparent:true,opacity:isSelected ? 0.95 : 0.25}));edge.position.copy(tile.position);this.world.add(edge);
    if(terrain==='mountain'||terrain==='hills'){
@@ -61,7 +66,7 @@ export class Imperium3DMap{
    }
    if(isSelected){const ring=new THREE.Mesh(new THREE.TorusGeometry(.78,.035,6,32),new THREE.MeshBasicMaterial({color:'#ffe2a0'}));ring.rotation.x=-Math.PI/2;ring.position.set(x,height+.43,z);this.world.add(ring)}
   }
-  const provincePos=new Map(items.map(({p})=>[String(p.id),{x:(Number(p.x)/2-cx)*1.95,z:(Number(p.y)/2-cz)*1.95}]));
+  const provincePos=new Map(items.map(({p})=>{const q=displayPos.get(String(p.id))||{x:Number(p.x)/2,z:Number(p.y)/2};return [String(p.id),{x:q.x*1.72,z:q.z*1.72}]}));
   const armyGroups=new Map();for(const army of (armies||[])){const pos=provincePos.get(String(army.province_id));if(!pos)continue;const nation=nationById.get(String(army.nation_id));const group=new THREE.Group();const nationColor=nation?.color||'#d9bd7a';
    const chassis=new THREE.Mesh(new THREE.BoxGeometry(.52,.17,.32),new THREE.MeshStandardMaterial({color:'#56645d',metalness:.35,roughness:.65}));chassis.position.y=.12;group.add(chassis);
    const turret=new THREE.Mesh(new THREE.BoxGeometry(.24,.14,.22),new THREE.MeshStandardMaterial({color:'#77877a',metalness:.25,roughness:.6}));turret.position.set(.03,.25,0);group.add(turret);
@@ -71,8 +76,8 @@ export class Imperium3DMap{
    group.position.set(pos.x+.38,pos.y+.42,pos.z+.28);group.traverse(o=>{if(o.isMesh)o.castShadow=true});this.world.add(group);
    const total=Number(army.infantry||0)+Number(army.armor||0)*10+Number(army.artillery||0)*5;const label=this.makeLabel((army.name||'ARMY')+' · '+Math.round(total));label.scale.set(2.5,.62,1);label.position.set(pos.x+.38,pos.y+1.25,pos.z+.28);this.world.add(label);
   }
-  const ground=new THREE.Mesh(new THREE.PlaneGeometry(Math.max(18,(Math.max(...xs)-Math.min(...xs)+2)*2.1),Math.max(18,(Math.max(...zs)-Math.min(...zs)+2)*2.1)),new THREE.MeshStandardMaterial({color:'#234c4e',roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.42;ground.receiveShadow=true;this.world.add(ground);
-  this.world.scale.setScalar(Math.max(.8,Math.min(1.35,zoom)));this.updateCamera();
+  const ground=new THREE.Mesh(new THREE.PlaneGeometry(30,18),new THREE.MeshStandardMaterial({color:'#234c4e',roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.42;ground.receiveShadow=true;this.world.add(ground);
+  this.world.scale.setScalar(Math.max(.85,Math.min(2.2,zoom)));this.updateCamera();
  }
  pick(e){const r=this.canvas.getBoundingClientRect();this.pointer.x=((e.clientX-r.left)/r.width)*2-1;this.pointer.y=-((e.clientY-r.top)/r.height)*2+1;this.raycaster.setFromCamera(this.pointer,this.camera);const hit=this.raycaster.intersectObjects(this.tiles,false)[0];if(hit?.object?.userData?.province)this.onSelect?.(hit.object.userData.province)}
  animate(){this.frame=requestAnimationFrame(()=>this.animate());this.renderer.render(this.scene,this.camera)}
