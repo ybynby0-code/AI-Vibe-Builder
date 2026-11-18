@@ -1,26 +1,38 @@
-# NEON STRIKE — Tactical Lab
+# NEON STRIKE — Tactical FPS Field Test
 
-A mobile-first, browser-based, original 3D tactical FPS prototype built with Three.js.
-
-## Current build
-- First-person 3D arena with a stylized urban combat map.
-- Custom GLSL toon/cel shading with stepped lighting and rim lighting for characters and weapon models.
-- Procedurally assembled environment with well over 90 mesh components.
-- Stylized articulated agent models with animated legs and arms.
-- Enemy AI that advances, tracks the player, and attacks at range.
-- Wave elimination, headshots, armor, health, ammo, reload, weapon switching, dash, jump, kill feed, hit markers, and round results.
-- Mobile touch controls: virtual movement stick, drag-to-aim zone, hold-to-fire, reload, jump, dash, weapon switch, and pause.
-- Desktop controls: WASD, mouse look, click fire, R reload, Space jump, Q dash, Esc pause.
-- Responsive menu, briefing, control manual, pause screen, and result screen.
-- Mobile fullscreen and landscape-orientation request when the browser allows it.
-- No Unity and no external game-builder plugins. Runs as a static GitHub Pages site.
-
-## Controls
-Mobile: left stick to move; drag the right side to aim; hold FIRE to shoot.
-Desktop: WASD to move; mouse to aim; left click to shoot.
+A browser-based, original-IP, stylized 3D tactical FPS prototype built with Three.js. No game engine installation or build step is required.
 
 ## Run
-Open /game/ on the deployed GitHub Pages site. The Three.js module is loaded from jsDelivr, so an internet connection is required.
+Open the GitHub Pages path: `/AI-Vibe-Builder/game/`.
+The page loads Three.js r180 as an ES module from jsDelivr. A WebGL-capable browser and an internet connection are required.
 
-## Prototype limitations
-This is a single-player gameplay test, not online multiplayer or a production Valorant clone. Models are generated procedurally at runtime; the 90+ count refers to scene mesh components, not 90 individually authored high-poly character assets.
+## Controls
+### Touch
+- Left virtual stick: move
+- Drag the right side of the screen: aim
+- FIRE: hold to fire
+- Reload, jump, dash and weapon-switch buttons: perform the named action
+- Pause button: pause the match
+
+### Keyboard and mouse
+- WASD: move
+- Mouse: aim (click the canvas to lock pointer)
+- Left mouse: fire
+- R: reload
+- Space: jump
+- Q: dash
+- 1: switch weapon
+- Escape: pause/resume
+
+## Systems
+- Three.js 3D arena with more than 90 generated environment mesh instances
+- Custom GLSL toon/cel lighting with quantized diffuse bands and rim lighting
+- Procedurally assembled stylized operator characters with animated legs
+- First-person weapon viewmodel, two weapon profiles, ammo and reload
+- Raycast hits, headshot multiplier, hit confirmation and elimination feed
+- Enemy wave spawning, basic pursuit/attack behavior, armor and health
+- Mobile pointer-event controls, safe-area spacing and responsive HUD
+- Training mode and round-result screen
+
+## Scope and limitations
+This is a single-player technical field-test prototype, not a finished commercial game or a networked Valorant clone. The 90+ count refers to generated mesh instances, not 90 unique high-detail authored model files. Multiplayer, objective planting, agent abilities, production animation rigs, and external art assets are not implemented.
