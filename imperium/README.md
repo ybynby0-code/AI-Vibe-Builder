@@ -24,3 +24,19 @@ Authenticate requests with a Supabase user access token. Supported MCP tools are
 
 ## Honest implementation boundary
 This is the initial playable foundation, not a finished 10,000-feature production game. AI diplomacy, combat resolution, pathfinding, full economic chains, fog-of-war enforcement, and robust simultaneous-turn conflict resolution remain future systems.
+
+## MCP connection
+Endpoint:
+`https://wqhudsyehjfdtzhstsnf.supabase.co/functions/v1/imperium-mcp`
+
+The endpoint implements JSON-RPC MCP methods `initialize`, `tools/list`, and `tools/call`. It requires a valid Supabase user access token as a Bearer token; it does not accept the publishable key as user authentication.
+
+Available tools:
+- `get_world_overview`
+- `list_provinces`
+- `issue_order`
+- `send_world_chat`
+- `respond_to_treaty`
+- `advance_turn` (host only)
+
+Never place a Supabase service-role key in a browser or MCP client configuration.
