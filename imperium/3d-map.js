@@ -34,10 +34,10 @@ export class Imperium3DMap{
   const geometry=new THREE.ExtrudeGeometry(hex,{depth:.23,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.045,bevelThickness:.045});geometry.rotateX(-Math.PI/2);
   for(const {p,n} of items){
    const terrain=p.terrain||'plains',isSelected=String(selected)===String(p.id);const base=mode==='political'?(n?.color||'#718b79'):this.terrainColor(terrain);
-   const mat=new THREE.MeshStandardMaterial({color:this.color(base),roughness:.86,metalness:.02,emissive:isSelected?'#a77b3a':'#000000',emissiveIntensity:isSelected?.28:0});
+   const mat=new THREE.MeshStandardMaterial({color:this.color(base),roughness:.86,metalness:.02,emissive:isSelected?'#a77b3a':'#000000',emissiveIntensity:isSelected ? 0.28 : 0});
    const x=(Number(p.x)/2-cx)*1.95,z=(Number(p.y)/2-cz)*1.95;const height=.18+Math.min(1.15,Number(p.development||1)*.09)+(terrain==='mountain'?.35:terrain==='hills'?.15:0);
    const tile=new THREE.Mesh(geometry,mat);tile.position.set(x,height,z);tile.castShadow=true;tile.receiveShadow=true;tile.userData.province=p;this.world.add(tile);this.tiles.push(tile);
-   const edge=new THREE.LineSegments(new THREE.EdgesGeometry(geometry),new THREE.LineBasicMaterial({color:isSelected?'#fff0ba':'#d7e3d8',transparent:true,opacity:isSelected?.95:.25}));edge.position.copy(tile.position);this.world.add(edge);
+   const edge=new THREE.LineSegments(new THREE.EdgesGeometry(geometry),new THREE.LineBasicMaterial({color:isSelected?'#fff0ba':'#d7e3d8',transparent:true,opacity:isSelected ? 0.95 : 0.25}));edge.position.copy(tile.position);this.world.add(edge);
    if(terrain==='mountain'||terrain==='hills'){
     const count=terrain==='mountain'?3:2;for(let k=0;k<count;k++){const h=(terrain==='mountain'?1.0:.48)+((k%2)*.2);const rock=new THREE.Mesh(new THREE.ConeGeometry(terrain==='mountain'?.32:.27,h,5),new THREE.MeshStandardMaterial({color:terrain==='mountain'?'#aab2b4':'#988c72',roughness:1}));rock.position.set(x+(k-1)*.36,height+.24+h/2,z+(k%2-.5)*.26);rock.castShadow=true;this.world.add(rock)}
    }else if(terrain==='forest'){
