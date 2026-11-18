@@ -2,7 +2,7 @@ import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.m
 
 /* NEON STRIKE — mobile-first tactical FPS prototype */
 const $=id=>document.getElementById(id);
-const ui={overlay:$("overlay"),menuShell:document.querySelector(".menu-shell"),briefing:$("briefing"),hud:$("hud"),mobile:$("mobile"),pause:$("pause"),result:$("result"),rotate:$("rotateNotice")};
+const ui={overlay:$("overlay"),menuShell:document.querySelector(".menu-shell"),briefing:$("briefing"),hud:$("hud"),mobile:$("mobile"),pause:$("pause"),result:$("result"),rotate:$("rotateNotice"),controls:$("controlsPanel")};
 const isTouch=()=>matchMedia("(pointer:coarse)").matches||navigator.maxTouchPoints>0;
 const clamp=THREE.MathUtils.clamp;
 const scene=new THREE.Scene();
@@ -95,7 +95,7 @@ function makeAgent(team="red"){
  const chest=addMesh(new THREE.BoxGeometry(.38,.26,.405),dark,[0,1.18,-.015],root);
  addMesh(new THREE.BoxGeometry(.12,.1,.43),team==="red"?mats.pink:mats.cyan,[0,1.2,-.22],root);
  const headGroup=new THREE.Group();headGroup.position.set(0,1.78,0);root.add(headGroup);
- addMesh(new THREE.SphereGeometry(.235,12,10),skin,[0,0,0],headGroup);
+ const headMesh=addMesh(new THREE.SphereGeometry(.235,12,10),skin,[0,0,0],headGroup);headMesh.userData.isHead=true;
  addMesh(new THREE.SphereGeometry(.26,10,8,0,Math.PI*2,0,Math.PI*.53),dark,[0,.04,0],headGroup);
  addMesh(new THREE.BoxGeometry(.32,.09,.25),visor,[0,.015,-.208],headGroup);
  const shoulderL=addMesh(new THREE.SphereGeometry(.19,9,8),suit,[-.47,1.43,0],root);
@@ -159,7 +159,7 @@ function finish(win){gameState="result";fireHeld=false;const secs=Math.floor((pe
 function startGame(isTraining=false){
  training=isTraining;player.hp=100;player.armor=50;player.kills=0;player.round=1;player.weapon=0;player.ammo=25;player.reserve=100;player.shots=0;player.hits=0;shotsThisRound=0;hitThisRound=0;yaw=0;pitch=0;camera.position.set(0,1.72,13);camera.rotation.set(0,0,0);makeViewWeapon();spawnWave();roundStart=performance.now();gameState="playing";paused=false;ui.overlay.classList.add("hidden");ui.pause.classList.add("hidden");ui.result.classList.add("hidden");ui.hud.classList.remove("hidden");if(isTouch())ui.mobile.classList.remove("hidden");else renderer.domElement.requestPointerLock?.();if(isTouch()&&innerWidth<innerHeight){ui.rotate.classList.add("show");}}
 function nextRound(){player.round++;player.hp=100;player.armor=Math.min(100,player.armor+15);camera.position.set(0,1.72,13);spawnWave();roundStart=performance.now();gameState="playing";ui.result.classList.add("hidden");}
-function backToMenu(){gameState="menu";clearEnemies();ui.hud.classList.add("hidden");ui.mobile.classList.add("hidden");ui.pause.classList.add("hidden");ui.result.classList.add("hidden");ui.overlay.classList.remove("hidden");ui.menuShell.classList.remove("hidden");ui.briefing.classList.add("hidden");document.exitPointerLock?.();}
+function backToMenu(){gameState="menu";clearEnemies();ui.hud.classList.add("hidden");ui.mobile.classList.add("hidden");ui.pause.classList.add("hidden");ui.controls.classList.add("hidden");ui.result.classList.add("hidden");ui.overlay.classList.remove("hidden");ui.menuShell.classList.remove("hidden");ui.briefing.classList.add("hidden");document.exitPointerLock?.();}
 function pauseGame(){if(gameState!=="playing")return;gameState="paused";fireHeld=false;ui.pause.classList.remove("hidden");}
 function resumeGame(){if(gameState!=="paused")return;gameState="playing";ui.pause.classList.add("hidden");if(!isTouch())renderer.domElement.requestPointerLock?.();}
 $("playBtn").onclick=()=>{ui.menuShell.classList.add("hidden");ui.briefing.classList.remove("hidden");$("briefTitle").textContent="작전 투입";$("briefText").textContent="적 요원을 제거하고 라운드를 돌파하십시오. 머리를 정확히 맞히면 한 발로 제압할 수 있습니다.";};
@@ -172,7 +172,7 @@ $("btnReload").onclick=reload;$("btnSwitch").onclick=switchWeapon;$("btnSkill").
 $("btnJump").onclick=()=>{if(grounded&&gameState==="playing"){verticalVelocity=6.3;grounded=false;}};
 $("btnFire").addEventListener("pointerdown",e=>{e.preventDefault();fireHeld=true;shoot();$("btnFire").setPointerCapture(e.pointerId);});
 const stopFire=()=>fireHeld=false;$("btnFire").addEventListener("pointerup",stopFire);$("btnFire").addEventListener("pointercancel",stopFire);$("btnFire").addEventListener("lostpointercapture",stopFire);
-$("how")?.addEventListener("click",()=>{});
+$("controlsBtn").onclick=()=>ui.controls.classList.remove("hidden");$("closeControls").onclick=()=>ui.controls.classList.add("hidden");$("btnPause").onclick=pauseGame;
 
 addEventListener("keydown",e=>{keys[e.code]=true;if(e.code==="Escape"){if(gameState==="playing")pauseGame();else if(gameState==="paused")resumeGame();}if(e.code==="KeyR")reload();if(e.code==="KeyQ")dash();if(e.code==="Digit1")switchWeapon();if(e.code==="Space"&&grounded&&gameState==="playing"){verticalVelocity=6.3;grounded=false;}});
 addEventListener("keyup",e=>keys[e.code]=false);
