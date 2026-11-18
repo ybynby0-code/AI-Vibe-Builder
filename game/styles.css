@@ -8,3 +8,14 @@
 @media(max-width:800px){.menu-shell{min-height:0;grid-template-columns:1fr;width:min(560px,100%)}.menu-left{padding:30px 28px 24px}.menu-right{display:none}h1{font-size:clamp(68px,16vw,92px);margin:22px 0 15px}.tagline{margin-bottom:24px}.menu-foot{margin-top:28px}.hud-top{height:58px;padding:8px 13px}.objective{top:68px;font-size:9px}.hud-bottom{left:14px;right:14px;bottom:calc(12px + var(--safe-b))}.player-stats{width:105px}.health-line b{font-size:25px}.weapon-stats{gap:9px}.weapon-name b{font-size:12px}.ammo b{font-size:28px}.killfeed{right:10px;top:88px}.toast{top:23%}}
 @media(orientation:portrait) and (max-width:800px){.rotate-notice{position:fixed;z-index:40;inset:0;display:none;place-content:center;text-align:center;gap:12px;padding:30px;background:#07101af5}.rotate-notice.show{display:grid}.rotate-icon{font-size:45px;color:var(--cyan)}.rotate-notice b{font-size:16px}.rotate-notice span{font-size:12px;color:#9aabb5;line-height:1.7}.rotate-notice button{margin:10px auto 0;padding:12px 18px;background:#ffffff12;border:1px solid #ffffff25;font-size:11px}}
 @media(orientation:landscape) and (max-height:520px){.hud-top{height:46px;padding:5px 15px}.objective{top:52px}.hud-bottom{bottom:8px}.player-stats{width:120px}.joystick{width:100px;height:100px;bottom:10px}.fire{width:72px;height:72px;bottom:12px}.reload{bottom:88px;width:45px;height:45px}.jump{bottom:10px;width:50px;height:50px}.skill{bottom:138px;width:45px;height:45px}.switch{bottom:190px;width:42px;height:42px}}
+
+/* Final interaction layer: dedicated touch look surface and pause/help controls. */
+#lookZone{position:absolute;right:0;top:0;width:62%;height:76%;z-index:0;pointer-events:auto;touch-action:none}
+.joystick{z-index:2}
+.action{z-index:3}
+.pause-btn{top:calc(13px + var(--safe-t));right:max(14px,env(safe-area-inset-right));width:42px;height:42px;border-radius:50%;opacity:.8}
+.pause-btn span{font-size:17px}
+#controlsPanel{position:fixed;inset:0;z-index:31;display:grid;place-items:center;background:#03070de8;backdrop-filter:blur(8px);padding:18px}
+#controlsPanel .pause-card p{line-height:2}
+@media(max-width:800px){.menu-actions{width:100%}.menu-actions button{min-height:50px}.pause-btn{width:38px;height:38px;top:calc(8px + var(--safe-t));right:12px}}
+@media(orientation:landscape) and (max-height:520px){.pause-btn{top:5px;right:8px}}
