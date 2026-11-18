@@ -8,14 +8,14 @@ export class Imperium3DMap{
   const sun=new THREE.DirectionalLight('#ffe4b5',3.1);sun.position.set(-12,24,15);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);sun.shadow.camera.left=-24;sun.shadow.camera.right=24;sun.shadow.camera.top=24;sun.shadow.camera.bottom=-24;this.scene.add(sun);
   const fill=new THREE.DirectionalLight('#6fa5c8',1.1);fill.position.set(16,12,-18);this.scene.add(fill);
   const sea=new THREE.Mesh(new THREE.PlaneGeometry(100,100),new THREE.MeshStandardMaterial({color:'#123b50',roughness:.72,metalness:.12}));sea.rotation.x=-Math.PI/2;sea.position.y=-.55;sea.receiveShadow=true;this.scene.add(sea);
-  this.world=new THREE.Group();this.scene.add(this.world);this.raycaster=new THREE.Raycaster();this.pointer=new THREE.Vector2();this.tiles=[];this.drag=null;this.yaw=.18;this.pitch=.72;this.distance=33;this.mode='political';this.provinces=[];this.nations=[];this.selected=null;
+  this.world=new THREE.Group();this.scene.add(this.world);this.raycaster=new THREE.Raycaster();this.pointer=new THREE.Vector2();this.tiles=[];this.drag=null;this.activePointers=new Map();this.pinchDistance=0;this.yaw=.18;this.pitch=.72;this.distance=33;this.mode='political';this.provinces=[];this.nations=[];this.selected=null;
   this.bind();this.resize();this.animate();
  }
  bind(){
-  this.canvas.addEventListener('pointerdown',e=>{this.drag={x:e.clientX,y:e.clientY,moved:false,pointerId:e.pointerId};this.canvas.setPointerCapture?.(e.pointerId)});
-  this.canvas.addEventListener('pointermove',e=>{if(!this.drag)return;const dx=e.clientX-this.drag.x,dy=e.clientY-this.drag.y;if(Math.abs(dx)+Math.abs(dy)>3)this.drag.moved=true;if(this.drag.moved){this.yaw-=dx*.006;this.pitch=Math.max(.25,Math.min(1.25,this.pitch+dy*.004));this.drag.x=e.clientX;this.drag.y=e.clientY;this.updateCamera()}});
-  this.canvas.addEventListener('pointerup',e=>{if(this.drag&&!this.drag.moved)this.pick(e);this.drag=null});
-  this.canvas.addEventListener('pointercancel',()=>this.drag=null);
+  this.canvas.addEventListener('pointerdown',e=>{this.activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});this.canvas.setPointerCapture?.(e.pointerId);if(this.activePointers.size===1)this.drag={x:e.clientX,y:e.clientY,moved:false};if(this.activePointers.size===2){const a=[...this.activePointers.values()];this.pinchDistance=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);this.drag=null}});
+  this.canvas.addEventListener('pointermove',e=>{if(!this.activePointers.has(e.pointerId))return;const prev=this.activePointers.get(e.pointerId);this.activePointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(this.activePointers.size>=2){const a=[...this.activePointers.values()],d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(this.pinchDistance>0){this.distance=Math.max(18,Math.min(52,this.distance-(d-this.pinchDistance)*.055));this.updateCamera()}this.pinchDistance=d;return}if(!this.drag)return;const dx=e.clientX-this.drag.x,dy=e.clientY-this.drag.y;if(Math.abs(dx)+Math.abs(dy)>3)this.drag.moved=true;if(this.drag.moved){this.yaw-=dx*.006;this.pitch=Math.max(.25,Math.min(1.25,this.pitch+dy*.004));this.drag.x=e.clientX;this.drag.y=e.clientY;this.updateCamera()}});
+  const endPointer=e=>{if(this.activePointers.size===1&&this.drag&&!this.drag.moved)this.pick(e);this.activePointers.delete(e.pointerId);this.drag=null;this.pinchDistance=0};
+  this.canvas.addEventListener('pointerup',endPointer);this.canvas.addEventListener('pointercancel',endPointer);
   this.canvas.addEventListener('wheel',e=>{e.preventDefault();this.distance=Math.max(18,Math.min(52,this.distance+e.deltaY*.025));this.updateCamera()},{passive:false});
   this.canvas.addEventListener('contextmenu',e=>e.preventDefault());
   window.addEventListener('resize',()=>this.resize());
