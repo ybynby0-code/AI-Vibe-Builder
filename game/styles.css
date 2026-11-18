@@ -8,3 +8,6 @@
 
 /* Combat feedback layer */
 body.hurt:after{content:"";position:fixed;inset:0;z-index:15;pointer-events:none;background:radial-gradient(ellipse at center,transparent 30%,#ff29445c 100%);animation:damagePulse .18s ease-out forwards}@keyframes damagePulse{0%{opacity:1}100%{opacity:.35}}#hit.on{box-shadow:0 0 14px #eaffff;animation:hitPop .1s ease-out}@keyframes hitPop{0%{transform:rotate(45deg) scale(.65)}100%{transform:rotate(45deg) scale(1)}}.touchbtn:active{transform:scale(.92);filter:brightness(1.35)}.fire:active{box-shadow:0 0 24px #ff536e99}
+
+.ability{left:calc(max(18px,env(safe-area-inset-left)) + 118px);bottom:calc(28px + var(--safeB));width:54px;height:54px;border-color:#a4c9ff}.ability.cooldown{opacity:.4;filter:grayscale(1)}
+@media(orientation:landscape) and (max-height:520px){.ability{left:130px;bottom:12px;width:48px;height:48px}}
