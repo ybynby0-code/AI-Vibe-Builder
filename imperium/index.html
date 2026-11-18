@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a1019">
+<title>IMPERIUM — World Order</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./style.css?v=1">
+</head>
+<body>
+<div class="ambient"></div>
+<header class="topbar">
+ <a class="brand" href="./"><span class="brand-mark">I</span><span>IMPERIUM<small>WORLD ORDER</small></span></a>
+ <div class="world-title"><span class="live-dot"></span><span id="worldName">GLOBAL STRATEGY NETWORK</span><small id="turnLabel">WORLD SIMULATION</small></div>
+ <div class="top-actions"><span class="online"><i></i><b id="onlineCount">0</b> ONLINE</span><button class="icon-btn" id="soundBtn" aria-label="효과음">◖</button><button class="user-chip" id="accountBtn"><span class="avatar" id="avatar">?</span><span id="userLabel">계정</span></button></div>
+</header>
+
+<main id="lobby" class="lobby">
+ <section class="hero">
+  <div class="hero-copy"><div class="eyebrow"><span></span> THE GRAND STRATEGY SANDBOX</div>
+   <h1>역사는 기다리지<br><em>않습니다.</em></h1>
+   <p>국가를 세우고, 산업을 일으키고, 동맹을 맺으십시오.<br>당신의 결정이 세계 질서를 다시 씁니다.</p>
+   <div class="hero-actions"><button class="btn btn-primary" id="createWorldBtn">새로운 세계 만들기 <b>↗</b></button><button class="btn btn-ghost" id="refreshWorlds">세계 목록 새로고침</button></div>
+   <div class="hero-metrics"><div><strong>08</strong><span>국가 / 세계</span></div><div><strong>48</strong><span>영토 프로빈스</span></div><div><strong>LIVE</strong><span>실시간 동기화</span></div></div>
+  </div>
+  <div class="hero-art" aria-hidden="true"><div class="orbit orbit-a"></div><div class="orbit orbit-b"></div><div class="globe"><div class="globe-grid"></div><div class="continent c1"></div><div class="continent c2"></div><div class="continent c3"></div><div class="globe-glow"></div></div><div class="art-label label-a">DIPLOMACY <b>↗</b></div><div class="art-label label-b">ECONOMY <b>↗</b></div><div class="art-label label-c">MILITARY <b>↗</b></div></div>
+ </section>
+ <section class="world-section"><div class="section-heading"><div><div class="eyebrow">MULTIPLAYER CAMPAIGNS</div><h2>진행 중인 세계</h2></div><span id="worldCount" class="muted">불러오는 중...</span></div><div id="worldList" class="world-grid"><div class="loading-card">세계 데이터를 불러오는 중입니다...</div></div></section>
+ <footer class="lobby-foot"><span>IMPERIUM / BUILD 0.1.0</span><span>POWERED BY SUPABASE REALTIME</span><span>ALLIANCES ARE TEMPORARY.</span></footer>
+</main>
+
+<main id="game" class="game-shell" hidden>
+ <aside class="rail">
+  <button class="rail-item active" data-view="map" title="세계 지도">⌗<small>지도</small></button>
+  <button class="rail-item" data-view="nation" title="국가">♜<small>국가</small></button>
+  <button class="rail-item" data-view="economy" title="경제">▥<small>경제</small></button>
+  <button class="rail-item" data-view="military" title="군사">⚔<small>군사</small></button>
+  <button class="rail-item" data-view="diplomacy" title="외교">◇<small>외교</small></button>
+  <button class="rail-item" data-view="research" title="연구">⌬<small>연구</small></button>
+  <div class="rail-spacer"></div><button class="rail-item" id="backLobby" title="세계 목록">↩<small>나가기</small></button>
+ </aside>
+ <section class="game-main">
+  <div class="commandbar"><div class="command-left"><span class="phase-pill"><i></i> WORLD LIVE</span><span id="phaseText">TURN 01 · FOUNDING ERA</span></div><div class="command-right"><span class="clock" id="worldClock">--:--</span><button class="btn btn-small btn-primary" id="advanceTurnBtn">턴 진행 <b>→</b></button></div></div>
+  <div class="resource-strip" id="resourceStrip"><div><small>국고</small><b id="resTreasury">—</b><em>¤</em></div><div><small>인력</small><b id="resManpower">—</b><em>♟</em></div><div><small>안정도</small><b id="resStability">—</b><em>%</em></div><div><small>영토</small><b id="resProvinces">—</b><em>⌗</em></div><div><small>위신</small><b id="resPrestige">—</b><em>✧</em></div></div>
+  <div class="workspace">
+   <section class="map-panel panel">
+    <div class="panel-head"><div><span class="eyebrow">STRATEGIC THEATER / 01</span><h2>세계 지도</h2></div><div class="map-tools"><span class="map-legend"><i></i> 내 영토</span><button class="mini-btn" id="mapReset">⤢</button></div></div>
+    <div class="map-wrap"><canvas id="worldMap" aria-label="세계 지도"></canvas><div class="map-coords">GRID 08 × 06 <span>·</span> PROJECTION / IMPERIUM</div><div class="map-overlay" id="mapOverlay">지도를 불러오는 중...</div></div>
+    <div class="map-footer"><span id="mapSelection">영토를 선택하면 상세 정보가 표시됩니다.</span><span id="mapScale">48 PROVINCES</span></div>
+   </section>
+   <aside class="intel-column">
+    <section class="panel inspector"><div class="panel-head"><div><span class="eyebrow">INTELLIGENCE / 02</span><h2 id="inspectTitle">국가 정보</h2></div><span class="tiny-status">LIVE</span></div><div id="inspectBody" class="inspect-body"><div class="empty-state">지도에서 영토를 선택하십시오.</div></div></section>
+    <section class="panel order-panel"><div class="panel-head"><div><span class="eyebrow">COMMAND / 03</span><h2>명령 센터</h2></div><span class="order-count" id="orderCount">0 queued</span></div><div class="order-actions">
+      <button data-order="tax"><b>¤</b><span>세금 징수<small>국고 수입 확보</small></span></button>
+      <button data-order="build"><b>⌂</b><span>건설 명령<small>선택 영토 개발</small></span></button>
+      <button data-order="recruit"><b>♟</b><span>병력 모집<small>상비군 증강</small></span></button>
+      <button data-order="research"><b>⌬</b><span>기술 연구<small>국가 역량 강화</small></span></button>
+      <button data-order="trade"><b>⇄</b><span>무역 협정<small>경제 활동 시작</small></span></button>
+      <button data-order="diplomacy"><b>◇</b><span>외교 제안<small>국제 관계 관리</small></span></button>
+    </div></section>
+    <section class="panel activity"><div class="panel-head"><div><span class="eyebrow">WORLD FEED / 04</span><h2>세계 소식</h2></div><span class="tiny-status">LIVE</span></div><div id="eventList" class="event-list"><div class="empty-state">기록을 불러오는 중...</div></div></section>
+   </aside>
+  </div>
+  <section class="bottom-panels">
+   <div class="panel nations-panel"><div class="panel-head"><div><span class="eyebrow">WORLD POWERS</span><h2>국가 현황</h2></div><span class="muted" id="nationCount">8 POWERS</span></div><div id="nationList" class="nation-list"></div></div>
+   <div class="panel chat-panel"><div class="panel-head"><div><span class="eyebrow">DIPLOMATIC CHANNEL</span><h2>세계 채팅</h2></div><span class="tiny-status"><i></i> LIVE</span></div><div id="chatMessages" class="chat-messages"><div class="empty-state">채팅을 불러오는 중...</div></div><form id="chatForm" class="chat-form"><input id="chatInput" maxlength="1000" placeholder="세계에 메시지 보내기..." autocomplete="off"><button aria-label="전송">↑</button></form></div>
+  </section>
+ </section>
+</main>
+
+<div class="modal-backdrop" id="authModal"><section class="modal auth-modal"><button class="modal-close" data-close="authModal">×</button><div class="eyebrow">IDENTITY / ACCESS</div><h2>세계에 접속하십시오.</h2><p>계정을 만들거나 기존 계정으로 로그인하십시오.</p><div class="auth-tabs"><button class="selected" data-auth="login">로그인</button><button data-auth="signup">회원가입</button></div><form id="authForm"><label>이메일<input type="email" id="authEmail" required autocomplete="email" placeholder="commander@example.com"></label><label>비밀번호<input type="password" id="authPassword" required minlength="8" autocomplete="current-password" placeholder="8자 이상"></label><button class="btn btn-primary full" id="authSubmit">로그인 <b>→</b></button><div class="form-message" id="authMessage"></div></form></section></div>
+<div class="modal-backdrop" id="createModal"><section class="modal"><button class="modal-close" data-close="createModal">×</button><div class="eyebrow">WORLD GENERATOR / 01</div><h2>새로운 세계를 창조합니다.</h2><p>8개 세력, 48개 영토, 경제·군사·외교 시스템이 생성됩니다.</p><form id="createForm"><label>세계 이름<input id="newWorldName" maxlength="48" required value="새로운 국제 질서"></label><button class="btn btn-primary full">세계 생성 <b>↗</b></button><div class="form-message" id="createMessage"></div></form></section></div>
+<div class="modal-backdrop" id="orderModal"><section class="modal"><button class="modal-close" data-close="orderModal">×</button><div class="eyebrow">ISSUE DIRECTIVE / 02</div><h2 id="orderModalTitle">명령 확인</h2><p id="orderModalDesc">명령은 현재 턴에 제출되며 호스트가 턴을 진행하면 처리됩니다.</p><div id="orderFields"></div><button class="btn btn-primary full" id="confirmOrder">명령 제출 <b>→</b></button><div class="form-message" id="orderMessage"></div></section></div>
+<div class="toast" id="toast"></div>
+<script type="module" src="./app.js?v=1"></script>
+</body></html>
