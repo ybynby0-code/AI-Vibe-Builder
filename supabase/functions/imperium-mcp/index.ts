@@ -48,7 +48,9 @@ Deno.serve(async(req)=>{
    const r=await supabase.rpc("imperium_submit_order",{p_world:args.world_id,p_category:args.category,p_payload:args.payload||{}});data={order_id:r.data};error=r.error;
   }else if(name==="send_world_chat"){
    const r=await supabase.rpc("imperium_send_chat",{p_world:args.world_id,p_body:args.message});data={message_id:r.data};error=r.error;
-  }else if(name==="respond_to_treaty"){\n   const r=await supabase.rpc("imperium_respond_treaty",{p_treaty:args.treaty_id,p_accept:args.accept});data=r.data;error=r.error;\n  }else if(name==="advance_turn"){
+  }else if(name==="respond_to_treaty"){
+   const r=await supabase.rpc("imperium_respond_treaty",{p_treaty:args.treaty_id,p_accept:args.accept});data=r.data;error=r.error;
+  }else if(name==="advance_turn"){
    const r=await supabase.rpc("imperium_advance_turn",{p_world:args.world_id});data=r.data;error=r.error;
   }else{return fail(id,-32602,"Unknown tool: "+String(name))}
   if(error)return fail(id,-32000,error.message||"Tool execution failed.");
