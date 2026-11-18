@@ -21,7 +21,7 @@ export class Imperium3DMap{
   window.addEventListener('resize',()=>this.resize());
  }
  updateCamera(){const cp=Math.cos(this.pitch),sp=Math.sin(this.pitch);this.camera.position.set(this.target.x+Math.sin(this.yaw)*this.distance*cp,this.target.y+this.distance*sp,this.target.z+Math.cos(this.yaw)*this.distance*cp);this.camera.lookAt(this.target)}
- resize(){const r=this.canvas.getBoundingClientRect();if(!r.width||!r.height)return;this.renderer.setSize(r.width,r.height,false);this.camera.aspect=r.width/r.height;this.camera.updateProjectionMatrix()}
+ resize(){const r=this.canvas.getBoundingClientRect();if(!r.width||!r.height)return;this.renderer.setSize(r.width,r.height,false);this.camera.aspect=r.width/r.height;this.camera.updateProjectionMatrix();this.distance=r.width/r.height<1?57:38;this.updateCamera()}
  color(hex){try{return new THREE.Color(hex||'#657f72')}catch{return new THREE.Color('#657f72')}}
  terrainColor(t){return ({plains:'#849b70',forest:'#386b55',hills:'#9b8b65',coast:'#4c8790',mountain:'#9da5a7',river:'#4d8fa6',desert:'#b89b69'}[t]||'#718b79')}
  scaleColor(value,max,low,high){const t=Math.max(0,Math.min(1,Number(value||0)/Math.max(1,Number(max||1))));const a=new THREE.Color(low),b=new THREE.Color(high);return a.lerp(b,t)}
