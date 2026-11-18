@@ -24,9 +24,10 @@ async function refreshWorld(){if(!state.world)return;const id=state.world.id;con
  supabase.from('imperium_armies').select('*').eq('world_id',id),
  supabase.from('imperium_events').select('*').eq('world_id',id).order('id',{ascending:false}).limit(12),
  supabase.from('imperium_chat').select('*').eq('world_id',id).order('id',{ascending:false}).limit(35),
- supabase.from('imperium_orders').select('id,status').eq('world_id',id).eq('status','queued'),\n supabase.from('imperium_wars').select('*').eq('world_id',id).eq('status','active')
+ supabase.from('imperium_orders').select('id,status').eq('world_id',id).eq('status','queued'),
+ supabase.from('imperium_wars').select('*').eq('world_id',id).eq('status','active')
 ]);
- for(const [r,nm] of [[w,'world'],[n,'nations'],[p,'provinces'],[pl,'players'],[a,'armies'],[e,'events'],[c,'chat'],[o,'orders']])if(r.error)console.warn(nm,r.error);
+ for(const [r,nm] of [[w,'world'],[n,'nations'],[p,'provinces'],[pl,'players'],[a,'armies'],[e,'events'],[c,'chat'],[o,'orders'],[wa,'wars']])if(r.error)console.warn(nm,r.error);
  if(w.data)state.world=w.data;state.nations=n.data||[];state.provinces=p.data||[];state.players=pl.data||[];state.armies=a.data||[];state.events=e.data||[];state.chat=(c.data||[]).reverse();state.orderCount=o.data?.length||0;state.wars=wa.data||[];
  const mine=state.players.find(x=>x.user_id===state.user.id);state.nation=state.nations.find(x=>x.id===mine?.nation_id)||null;
  renderAll();
