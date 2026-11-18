@@ -11,3 +11,13 @@
 .map-tools{gap:6px}
 .map-tools .mini-btn{min-width:27px}
 @media(max-width:760px){.map-tools{gap:4px}.map-mode{font-size:7px;padding:5px 3px;max-width:76px}.map-tools .mini-btn{min-width:24px;padding:5px 6px}.map-wrap{min-height:340px}}
+
+.strategy-view{margin-top:12px;min-height:430px;overflow:hidden}.strategy-content{padding:16px}.strategy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.strategy-card{background:linear-gradient(145deg,#1c3040,#12212e);border:1px solid #334b5d;padding:16px;min-height:108px;display:flex;flex-direction:column;gap:7px;position:relative;overflow:hidden}
+.strategy-card:after{content:"";position:absolute;width:90px;height:90px;border:1px solid #ffffff0b;border-radius:50%;right:-34px;bottom:-46px;box-shadow:0 0 0 12px #ffffff04,0 0 0 24px #ffffff03}
+.strategy-card small{font-size:8px;color:#91a6b7;letter-spacing:.12em}.strategy-card strong{font:700 19px Manrope;color:#ead5aa}.strategy-card span{font-size:9px;color:#8da1b2}
+.strategy-section{margin-top:22px}.strategy-section h3{font:700 13px Manrope;margin:0 0 10px;color:#d7e0e7}.strategy-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.strategy-action{background:#1b2d3c;border:1px solid #344c5e;padding:13px;text-align:left;display:flex;flex-direction:column;gap:5px}.strategy-action b{font-size:11px;color:#e5d1a6}.strategy-action small{font-size:9px;color:#8da1b2}
+.strategy-table{border:1px solid #2a4051;background:#101d29}.strategy-table>div{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:8px;padding:11px 12px;border-bottom:1px solid #ffffff0b;font-size:9px;color:#9aabba}.strategy-table>div:last-child{border-bottom:0}.strategy-table b{color:#e0e7eb}
+.research-pick{margin-top:4px;align-self:flex-start;background:#243d4b;border:1px solid #466274;border-radius:3px;padding:7px 9px;font-size:9px;color:#e3d3b0}.strategy-note{margin-top:16px;padding:13px;background:#142a38;border-left:2px solid #b99a64;color:#91a5b5;font-size:10px;line-height:1.7}
+@media(max-width:760px){.strategy-view{margin-top:7px;min-height:0}.strategy-content{padding:10px}.strategy-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.strategy-card{padding:11px;min-height:95px}.strategy-card strong{font-size:16px}.strategy-actions{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.strategy-action{padding:10px}.strategy-table>div{grid-template-columns:1.2fr 1fr 1fr;gap:5px;padding:9px 7px;font-size:8px}.strategy-table>div span:last-child:nth-child(4){display:none}}
