@@ -25,7 +25,7 @@ export class Imperium3DMap{
  color(hex){try{return new THREE.Color(hex||'#657f72')}catch{return new THREE.Color('#657f72')}}
  terrainColor(t){return ({plains:'#849b70',forest:'#386b55',hills:'#9b8b65',coast:'#4c8790',mountain:'#9da5a7',river:'#4d8fa6',desert:'#b89b69'}[t]||'#718b79')}
  makeLabel(text,color='#f3e4bd'){const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.font='bold 28px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#07131dcc';x.fillRect(12,8,232,48);x.fillStyle=color;x.fillText(String(text).slice(0,18),128,32);const tex=new THREE.CanvasTexture(c);const m=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));m.scale.set(2.2,.55,1);return m}
- update(provinces,nations,mode,selected,zoom=1){
+ update(provinces,nations,armies,mode,selected,zoom=1){
   this.provinces=provinces||[];this.nations=nations||[];this.mode=mode;this.selected=selected;
   this.world.traverse(o=>{o.geometry?.dispose();if(o.material){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{m.map?.dispose();m.dispose()})}});this.world.clear();
   this.tiles=[];const nationById=new Map(this.nations.map(n=>[String(n.id),n]));
@@ -50,6 +50,16 @@ export class Imperium3DMap{
     if(capital){const label=this.makeLabel(n.tag||'CAPITAL');label.position.set(x,height+1.35,z);this.world.add(label)}
    }
    if(isSelected){const ring=new THREE.Mesh(new THREE.TorusGeometry(.78,.035,6,32),new THREE.MeshBasicMaterial({color:'#ffe2a0'}));ring.rotation.x=-Math.PI/2;ring.position.set(x,height+.43,z);this.world.add(ring)}
+  }
+  const provincePos=new Map(items.map(({p})=>[String(p.id),{x:(Number(p.x)/2-cx)*1.95,z:(Number(p.y)/2-cz)*1.95}]));
+  const armyGroups=new Map();for(const army of (armies||[])){const pos=provincePos.get(String(army.province_id));if(!pos)continue;const nation=nationById.get(String(army.nation_id));const group=new THREE.Group();const nationColor=nation?.color||'#d9bd7a';
+   const chassis=new THREE.Mesh(new THREE.BoxGeometry(.52,.17,.32),new THREE.MeshStandardMaterial({color:'#56645d',metalness:.35,roughness:.65}));chassis.position.y=.12;group.add(chassis);
+   const turret=new THREE.Mesh(new THREE.BoxGeometry(.24,.14,.22),new THREE.MeshStandardMaterial({color:'#77877a',metalness:.25,roughness:.6}));turret.position.set(.03,.25,0);group.add(turret);
+   const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.025,.035,.32,6),new THREE.MeshStandardMaterial({color:'#303b3b',metalness:.55}));barrel.rotation.z=-Math.PI/2;barrel.position.set(.27,.26,0);group.add(barrel);
+   const pole=new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.65,5),new THREE.MeshStandardMaterial({color:'#c6b58d'}));pole.position.set(-.25,.42,-.18);group.add(pole);
+   const flag=new THREE.Mesh(new THREE.PlaneGeometry(.28,.16),new THREE.MeshStandardMaterial({color:nationColor,side:THREE.DoubleSide,roughness:.8}));flag.position.set(-.12,.61,-.18);group.add(flag);
+   group.position.set(pos.x+.38,pos.y+.42,pos.z+.28);group.traverse(o=>{if(o.isMesh)o.castShadow=true});this.world.add(group);
+   const total=Number(army.infantry||0)+Number(army.armor||0)*10+Number(army.artillery||0)*5;const label=this.makeLabel((army.name||'ARMY')+' · '+Math.round(total));label.scale.set(2.5,.62,1);label.position.set(pos.x+.38,pos.y+1.25,pos.z+.28);this.world.add(label);
   }
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(Math.max(18,(Math.max(...xs)-Math.min(...xs)+2)*2.1),Math.max(18,(Math.max(...zs)-Math.min(...zs)+2)*2.1)),new THREE.MeshStandardMaterial({color:'#234c4e',roughness:1}));ground.rotation.x=-Math.PI/2;ground.position.y=-.42;ground.receiveShadow=true;this.world.add(ground);
   this.world.scale.setScalar(Math.max(.8,Math.min(1.35,zoom)));this.updateCamera();
