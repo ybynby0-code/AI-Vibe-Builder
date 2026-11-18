@@ -24,16 +24,26 @@ export class Imperium3DMap{
  resize(){const r=this.canvas.getBoundingClientRect();if(!r.width||!r.height)return;this.renderer.setSize(r.width,r.height,false);this.camera.aspect=r.width/r.height;this.camera.updateProjectionMatrix()}
  color(hex){try{return new THREE.Color(hex||'#657f72')}catch{return new THREE.Color('#657f72')}}
  terrainColor(t){return ({plains:'#849b70',forest:'#386b55',hills:'#9b8b65',coast:'#4c8790',mountain:'#9da5a7',river:'#4d8fa6',desert:'#b89b69'}[t]||'#718b79')}
+ scaleColor(value,max,low,high){const t=Math.max(0,Math.min(1,Number(value||0)/Math.max(1,Number(max||1))));const a=new THREE.Color(low),b=new THREE.Color(high);return a.lerp(b,t)}
+ provinceColor(p,n,mode){
+  if(mode==='terrain'||mode==='relief')return this.color(this.terrainColor(p.terrain));
+  if(mode==='population')return this.scaleColor(p.population,160000,'#233e58','#f3d17b');
+  if(mode==='development')return this.scaleColor(p.development,10,'#344e5a','#f0c36b');
+  if(mode==='fort')return this.scaleColor(p.fort_level,5,'#34434b','#e47c58');
+  if(mode==='resources'){const r=p.resources||{},v=Number(r.food||0)+Number(r.iron||0)*1.5+Number(r.oil||0)*2;return this.scaleColor(v,220,'#354b56','#83d4a0')}
+  if(mode==='military'){const stationed=this.armies?.filter(a=>String(a.province_id)===String(p.id)).reduce((v,a)=>v+Number(a.infantry||0)+Number(a.armor||0)*8+Number(a.artillery||0)*4,0)||0;return this.scaleColor(stationed,900,'#354b56','#f06e58')}
+  return this.color(n?.color||'#718b79')
+ }
  makeLabel(text,color='#f3e4bd'){const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.font='bold 28px sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle='#07131dcc';x.fillRect(12,8,232,48);x.fillStyle=color;x.fillText(String(text).slice(0,18),128,32);const tex=new THREE.CanvasTexture(c);const m=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false}));m.scale.set(2.2,.55,1);return m}
  update(provinces,nations,armies,mode,selected,zoom=1){
-  this.provinces=provinces||[];this.nations=nations||[];this.mode=mode;this.selected=selected;
+  this.provinces=provinces||[];this.nations=nations||[];this.armies=armies||[];this.mode=mode;this.selected=selected;
   this.world.traverse(o=>{o.geometry?.dispose();if(o.material){const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{m.map?.dispose();m.dispose()})}});this.world.clear();
   this.tiles=[];const nationById=new Map(this.nations.map(n=>[String(n.id),n]));
   const items=this.provinces.map(p=>({p,n:nationById.get(String(p.nation_id))}));const xs=items.map(v=>Number(v.p.x)/2),zs=items.map(v=>Number(v.p.y)/2);const cx=(Math.min(...xs)+Math.max(...xs))/2,cz=(Math.min(...zs)+Math.max(...zs))/2;
   const hex=new THREE.Shape();for(let i=0;i<6;i++){const a=Math.PI/3*i+Math.PI/6,x=Math.cos(a)*.91,z=Math.sin(a)*.91;i?hex.lineTo(x,z):hex.moveTo(x,z)}hex.closePath();
   const geometry=new THREE.ExtrudeGeometry(hex,{depth:.23,bevelEnabled:true,bevelSegments:1,steps:1,bevelSize:.045,bevelThickness:.045});geometry.rotateX(-Math.PI/2);
   for(const {p,n} of items){
-   const terrain=p.terrain||'plains',isSelected=String(selected)===String(p.id);const base=mode==='political'?(n?.color||'#718b79'):this.terrainColor(terrain);
+   const terrain=p.terrain||'plains',isSelected=String(selected)===String(p.id);const base=this.provinceColor(p,n,mode);
    const mat=new THREE.MeshStandardMaterial({color:this.color(base),roughness:.86,metalness:.02,emissive:isSelected?'#a77b3a':'#000000',emissiveIntensity:isSelected ? 0.28 : 0});
    const x=(Number(p.x)/2-cx)*1.95,z=(Number(p.y)/2-cz)*1.95;const height=.18+Math.min(1.15,Number(p.development||1)*.09)+(terrain==='mountain'?.35:terrain==='hills'?.15:0);
    const tile=new THREE.Mesh(geometry,mat);tile.position.set(x,height,z);tile.castShadow=true;tile.receiveShadow=true;tile.userData.province=p;this.world.add(tile);this.tiles.push(tile);
