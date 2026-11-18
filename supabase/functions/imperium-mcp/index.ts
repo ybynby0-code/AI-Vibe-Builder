@@ -8,9 +8,9 @@ const cors = {
 const tools = [
   {name:"get_world_overview",description:"Get the current turn, status, player nation and national powers for an Imperium world.",inputSchema:{type:"object",properties:{world_id:{type:"string",description:"World UUID"}},required:["world_id"]}},
   {name:"list_provinces",description:"List provinces, ownership, terrain, population and resources in a world.",inputSchema:{type:"object",properties:{world_id:{type:"string"}},required:["world_id"]}},
-  {name:"issue_order",description:"Submit a validated nation order for the current turn. Categories: build, move, recruit, research, diplomacy, trade, tax, policy.",inputSchema:{type:"object",properties:{world_id:{type:"string"},category:{type:"string",enum:["build","move","recruit","research","diplomacy","trade","tax","policy"]},payload:{type:"object"}},required:["world_id","category"]}},
+  {name:"issue_order",description:"Submit a validated nation order for the current turn. Categories: build, move, recruit, research, diplomacy, trade, tax, policy, war, attack, fortify, mobilize.",inputSchema:{type:"object",properties:{world_id:{type:"string"},category:{type:"string",enum:["build","move","recruit","research","diplomacy","trade","tax","policy","war","attack","fortify","mobilize"]},payload:{type:"object"}},required:["world_id","category"]}},
   {name:"send_world_chat",description:"Send a message to the authenticated player's world chat.",inputSchema:{type:"object",properties:{world_id:{type:"string"},message:{type:"string"}},required:["world_id","message"]}},
-  {name:"advance_turn",description:"Resolve the current turn. Only the world host can do this.",inputSchema:{type:"object",properties:{world_id:{type:"string"}},required:["world_id"]}}
+  {name:"respond_to_treaty",description:"Accept or reject a treaty proposal addressed to the authenticated nation.",inputSchema:{type:"object",properties:{treaty_id:{type:"string"},accept:{type:"boolean"}},required:["treaty_id","accept"]}},\n  {name:"advance_turn",description:"Resolve the current turn. Only the world host can do this.",inputSchema:{type:"object",properties:{world_id:{type:"string"}},required:["world_id"]}}
 ];
 function json(id,result){return new Response(JSON.stringify({jsonrpc:"2.0",id,result}),{headers:cors})}
 function fail(id,code,message){return new Response(JSON.stringify({jsonrpc:"2.0",id,error:{code,message}}),{status:200,headers:cors})}
@@ -47,7 +47,7 @@ Deno.serve(async(req)=>{
    const r=await supabase.rpc("imperium_submit_order",{p_world:args.world_id,p_category:args.category,p_payload:args.payload||{}});data={order_id:r.data};error=r.error;
   }else if(name==="send_world_chat"){
    const r=await supabase.rpc("imperium_send_chat",{p_world:args.world_id,p_body:args.message});data={message_id:r.data};error=r.error;
-  }else if(name==="advance_turn"){
+  }else if(name==="respond_to_treaty"){\n   const r=await supabase.rpc("imperium_respond_treaty",{p_treaty:args.treaty_id,p_accept:args.accept});data=r.data;error=r.error;\n  }else if(name==="advance_turn"){
    const r=await supabase.rpc("imperium_advance_turn",{p_world:args.world_id});data=r.data;error=r.error;
   }else{return fail(id,-32602,"Unknown tool: "+String(name))}
   if(error)return fail(id,-32000,error.message||"Tool execution failed.");
