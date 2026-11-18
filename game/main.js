@@ -156,8 +156,9 @@ function switchWeapon(){if(gameState!=="playing")return;player.weapon=1-player.w
 function dash(){if(gameState!=="playing"||dashCooldown>0)return;const dir=new THREE.Vector3();camera.getWorldDirection(dir);dir.y=0;dir.normalize();camera.position.addScaledVector(dir,3.3);dashCooldown=5;showToast("DASH");}
 function damagePlayer(amount){if(performance.now()-lastDamage<750||gameState!=="playing")return;lastDamage=performance.now();let d=amount;if(player.armor>0){const absorbed=Math.min(player.armor,Math.ceil(d*.55));player.armor-=absorbed;d-=absorbed;}player.hp=Math.max(0,player.hp-d);$("damageFlash").classList.add("show");setTimeout(()=>$("damageFlash").classList.remove("show"),140);updateHUD();if(player.hp<=0)finish(false);}
 function finish(win){gameState="result";fireHeld=false;const secs=Math.floor((performance.now()-roundStart)/1000);$("resultEyebrow").textContent=win?"MISSION COMPLETE":"MISSION FAILED";$("resultTitle").textContent=win?"ROUND CLEAR":"OPERATOR DOWN";$("resultKills").textContent=player.kills;$("resultAccuracy").textContent=(player.shots?Math.round(player.hits/player.shots*100):0)+"%";$("resultTime").textContent=String(Math.floor(secs/60)).padStart(2,"0")+":"+String(secs%60).padStart(2,"0");$("nextBtn").textContent=win?"다음 라운드 →":"다시 도전 →";ui.result.classList.remove("hidden");}
+function enterFullscreen(){if(!isTouch())return;const p=document.documentElement.requestFullscreen?.();if(p&&typeof p.then==="function")p.then(()=>{const lock=screen.orientation?.lock?.("landscape");lock?.catch?.(()=>{});}).catch(()=>{});}
 function startGame(isTraining=false){
- training=isTraining;player.hp=100;player.armor=50;player.kills=0;player.round=1;player.weapon=0;player.ammo=25;player.reserve=100;player.shots=0;player.hits=0;shotsThisRound=0;hitThisRound=0;yaw=0;pitch=0;camera.position.set(0,1.72,13);camera.rotation.set(0,0,0);makeViewWeapon();spawnWave();roundStart=performance.now();gameState="playing";paused=false;ui.overlay.classList.add("hidden");ui.pause.classList.add("hidden");ui.result.classList.add("hidden");ui.hud.classList.remove("hidden");if(isTouch())ui.mobile.classList.remove("hidden");else renderer.domElement.requestPointerLock?.();if(isTouch()&&innerWidth<innerHeight){ui.rotate.classList.add("show");}}
+ enterFullscreen();training=isTraining;player.hp=100;player.armor=50;player.kills=0;player.round=1;player.weapon=0;player.ammo=25;player.reserve=100;player.shots=0;player.hits=0;shotsThisRound=0;hitThisRound=0;yaw=0;pitch=0;camera.position.set(0,1.72,13);camera.rotation.set(0,0,0);makeViewWeapon();spawnWave();roundStart=performance.now();gameState="playing";paused=false;ui.overlay.classList.add("hidden");ui.pause.classList.add("hidden");ui.result.classList.add("hidden");ui.hud.classList.remove("hidden");if(isTouch())ui.mobile.classList.remove("hidden");else renderer.domElement.requestPointerLock?.();if(isTouch()&&innerWidth<innerHeight){ui.rotate.classList.remove("hidden");ui.rotate.classList.add("show");}}
 function nextRound(){player.round++;player.hp=100;player.armor=Math.min(100,player.armor+15);camera.position.set(0,1.72,13);spawnWave();roundStart=performance.now();gameState="playing";ui.result.classList.add("hidden");}
 function backToMenu(){gameState="menu";clearEnemies();ui.hud.classList.add("hidden");ui.mobile.classList.add("hidden");ui.pause.classList.add("hidden");ui.controls.classList.add("hidden");ui.result.classList.add("hidden");ui.overlay.classList.remove("hidden");ui.menuShell.classList.remove("hidden");ui.briefing.classList.add("hidden");document.exitPointerLock?.();}
 function pauseGame(){if(gameState!=="playing")return;gameState="paused";fireHeld=false;ui.pause.classList.remove("hidden");}
@@ -167,7 +168,7 @@ $("deployBtn").onclick=()=>{ui.briefing.classList.add("hidden");startGame(false)
 $("trainingBtn").onclick=()=>startGame(true);
 $("resumeBtn").onclick=resumeGame;$("restartBtn").onclick=()=>startGame(training);$("menuBtn").onclick=backToMenu;
 $("nextBtn").onclick=()=>{if(player.hp<=0)startGame(training);else nextRound();};$("resultMenuBtn").onclick=backToMenu;
-$("rotateContinue").onclick=()=>ui.rotate.classList.remove("show");
+$("rotateContinue").onclick=()=>{ui.rotate.classList.remove("show");ui.rotate.classList.add("hidden");};
 $("btnReload").onclick=reload;$("btnSwitch").onclick=switchWeapon;$("btnSkill").onclick=dash;
 $("btnJump").onclick=()=>{if(grounded&&gameState==="playing"){verticalVelocity=6.3;grounded=false;}};
 $("btnFire").addEventListener("pointerdown",e=>{e.preventDefault();fireHeld=true;shoot();$("btnFire").setPointerCapture(e.pointerId);});
@@ -225,7 +226,7 @@ function animate(){
  renderer.render(scene,camera);
 }
 animate();
-function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,isTouch()?1.35:1.75));renderer.setSize(innerWidth,innerHeight);if(isTouch()&&gameState==="playing"&&innerWidth>innerHeight)ui.rotate.classList.remove("show");}
+function resize(){camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setPixelRatio(Math.min(devicePixelRatio,isTouch()?1.35:1.75));renderer.setSize(innerWidth,innerHeight);if(isTouch()&&gameState==="playing"&&innerWidth>innerHeight){ui.rotate.classList.remove("show");ui.rotate.classList.add("hidden");}}
 addEventListener("resize",resize);
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&gameState==="playing")pauseGame();});
 document.addEventListener("contextmenu",e=>e.preventDefault());
