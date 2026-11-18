@@ -5,7 +5,8 @@ Mobile-first grand strategy browser game. The first playable slice includes:
 - Supabase email/password authentication
 - World creation and joining
 - 8 generated nations and 48 generated provinces per world
-- SVG-like canvas hex-map visualization with selectable provinces
+- Interactive Three.js WebGL 3D hex-territory map with extruded relief, mountain/forest props, capital settlements, selectable provinces, drag rotation and mobile pinch zoom
+- 3D army miniatures with national banners and force-strength labels
 - National treasury, manpower, stability, prestige and province ownership
 - Build, recruit, research, tax, trade and diplomacy orders
 - Host-controlled turn resolution with server-side validation
@@ -14,7 +15,7 @@ Mobile-first grand strategy browser game. The first playable slice includes:
 - MCP-compatible Streamable HTTP endpoint (Edge Function)
 
 ## Deployment
-GitHub Pages serves the static client from `/imperium/`.
+GitHub Pages serves the static client from `/imperium/`. The 3D map module is loaded from the Three.js ESM CDN, so the first load requires an internet connection.
 The backend uses the existing NEXUS Supabase project with isolated `imperium_*` tables and RLS. The client uses only the publishable key; no service-role key is exposed.
 
 ## MCP endpoint
