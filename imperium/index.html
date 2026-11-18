@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="./style.css?v=3">
+<link rel="stylesheet" href="./style.css?v=4">
 </head>
 <body>
 <div class="ambient"></div>
@@ -48,7 +48,7 @@
   <div class="workspace">
    <section class="map-panel panel">
     <div class="panel-head"><div><span class="eyebrow">STRATEGIC THEATER / 01</span><h2>세계 지도</h2></div><div class="map-tools"><span class="map-legend"><i></i> 국가 경계</span><select id="mapMode" class="map-mode" aria-label="지도 표시"><option value="political">정치 지도</option><option value="terrain">지형 지도</option><option value="relief">지형 음영</option><option value="population">인구 밀도</option><option value="development">개발 수준</option><option value="fort">요새·방어</option><option value="resources">자원 분포</option><option value="military">군사 배치</option></select><button class="mini-btn" id="mapZoomOut" aria-label="축소">−</button><button class="mini-btn" id="mapZoomIn" aria-label="확대">＋</button><button class="mini-btn" id="mapReset">⤢</button></div></div>
-    <div class="map-wrap"><canvas id="worldMap" aria-label="세계 지도"></canvas><div class="map-coords">GRID 08 × 06 <span>·</span> PROJECTION / IMPERIUM</div><div class="map-overlay" id="mapOverlay">지도를 불러오는 중...</div></div>
+    <div class="map-wrap"><canvas id="worldMap" aria-label="세계 지도"></canvas><div class="map-coords">WORLD ATLAS · 48 TERRITORIES <span>·</span> NATURAL EARTH-STYLE</div><div class="map-overlay" id="mapOverlay">지도를 불러오는 중...</div></div>
     <div class="map-footer"><span id="mapSelection">영토를 선택하면 상세 정보가 표시됩니다.</span><span id="mapScale">48 PROVINCES</span></div>
    </section>
    <aside class="intel-column">
@@ -75,5 +75,5 @@
 <div class="modal-backdrop" id="createModal"><section class="modal"><button class="modal-close" data-close="createModal">×</button><div class="eyebrow">WORLD GENERATOR / 01</div><h2>새로운 세계를 창조합니다.</h2><p>8개 세력, 48개 영토, 경제·군사·외교 시스템이 생성됩니다.</p><form id="createForm"><label>세계 이름<input id="newWorldName" maxlength="48" required value="새로운 국제 질서"></label><button class="btn btn-primary full">세계 생성 <b>↗</b></button><div class="form-message" id="createMessage"></div></form></section></div>
 <div class="modal-backdrop" id="orderModal"><section class="modal"><button class="modal-close" data-close="orderModal">×</button><div class="eyebrow">ISSUE DIRECTIVE / 02</div><h2 id="orderModalTitle">명령 확인</h2><p id="orderModalDesc">명령은 현재 턴에 제출되며 호스트가 턴을 진행하면 처리됩니다.</p><div id="orderFields"></div><button class="btn btn-primary full" id="confirmOrder">명령 제출 <b>→</b></button><div class="form-message" id="orderMessage"></div></section></div>
 <div class="toast" id="toast"></div>
-<script type="module" src="./app.js?v=5"></script>
+<script type="module" src="./app.js?v=6"></script>
 </body></html>
