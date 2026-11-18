@@ -1,0 +1,15 @@
+{
+  "id": "./",
+  "name": "IMPERIUM: WORLD ORDER",
+  "short_name": "IMPERIUM",
+  "description": "A multiplayer grand strategy world simulation.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0a1019",
+  "theme_color": "#0a1019",
+  "icons": [
+    {"src":"./icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
